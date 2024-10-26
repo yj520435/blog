@@ -25,9 +25,9 @@
   --system-light-color: #e6d8d899;
   --shadow-color: #dddddd;
 
-  /* --main-color: #9b3674; */
   /* --main-color: #c02b5c; */
-  --main-color: teal;
+  --main-color: #a8355c;
+  --background-color: #000000;
 
   --system-dark-color-10: #00000010;
   --system-dark-color-30: #00000030;
@@ -65,7 +65,7 @@ body {
 }
 
 body {
-  background-color: black;
+  background-color: var(--background-color);
   /* background-image: url('@/assets/wallpaper16.jpg'); */
   /* background-position: center; */
   /* background-size: cover; */
@@ -105,8 +105,8 @@ body {
 }
 
 .filter {
-  filter: invert(26%) sepia(92%) saturate(1838%) hue-rotate(160deg) brightness(90%)
-    contrast(105%);
+  filter: invert(25%) sepia(19%) saturate(5926%) hue-rotate(311deg) brightness(94%)
+    contrast(83%);
 }
 
 .nw-resize {
