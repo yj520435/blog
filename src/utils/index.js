@@ -8,7 +8,7 @@ function loadFile(name, extension, date) {
 
   if (['md', 'txt'].includes(extension)) {
     id = `notepad-${date}`;
-    icon = 'notepad_file-2.png';
+    icon = 'file.svg';
     component = NotePad;
   }
 
@@ -38,7 +38,7 @@ export async function loadDir(path) {
       result.push({
         id: object.name,
         name: object.name,
-        icon: 'directory_open_file_mydocs_2k-4.png',
+        icon: 'folder.svg',
         component: null,
       });
     } else {
@@ -52,7 +52,6 @@ export async function loadDir(path) {
     }
   }
 
-  console.log('>> Dir', result);
   return result;
 }
 

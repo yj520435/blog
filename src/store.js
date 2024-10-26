@@ -8,12 +8,18 @@ export const useStore = defineStore('store', () => {
   const activatedProgram = ref();
 
   function open(program) {
-    programs.value.push(program);
-    sortedPrograms.value.push(program.id);
-    activatedProgram.value = program.id;
+    const isOpenedAlready = programs.value.find((v) => v.id === program.id);
+    if (!isOpenedAlready) {
+      programs.value.push(program);
+      sortedPrograms.value.push(program.id);
+      activatedProgram.value = program.id;
+    } else {
+      sort(program.id);
+    }
   }
 
   function close(id) {
+    console.log('>> Close');
     const index = programs.value.findIndex((v) => v.id === id);
     if (index > -1) programs.value.splice(index, 1);
 

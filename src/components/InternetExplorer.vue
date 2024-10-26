@@ -53,7 +53,7 @@ function createDiv() {
 
 function createImg(init) {
   const img = document.createElement('img')
-  img.src = require(`@/assets/icons/${init}`)
+  img.src = require(`@/assets/icons/line/${init}`)
   img.style.cssText = `
     width: 16px;
     height: 16px;
@@ -77,6 +77,8 @@ async function loadFile() {
 
   const converter = new Converter()
   post.value = converter.makeHtml(markdown)
+
+  isShowPopup.value = false
 }
 
 async function loadDirHierarchy(path, target, depth) {
@@ -89,18 +91,19 @@ async function loadDirHierarchy(path, target, depth) {
       const ul = createUl(depth * 20)
       const div = createDiv()
       const img = createImg('folder.svg')
+      img.classList = 'filter'
       const span = createSpan(item.name)
 
       div.onclick = () => {
         if (!div.classList.contains('opened')) {
           loadDirHierarchy(`${path}/${item.name}`, ul, depth + 1)
-          img.src = require('@/assets/icons/folder-open.svg')
+          img.src = require('@/assets/icons/line/folder-open.svg')
           div.classList = 'opened'
         } else {
           const copiedDiv = ul.childNodes[0]
           ul.innerHTML = ''
           ul.appendChild(copiedDiv)
-          img.src = require('@/assets/icons/folder.svg')
+          img.src = require('@/assets/icons/line/folder.svg')
           div.classList = ''
         }
       }
@@ -117,7 +120,8 @@ async function loadDirHierarchy(path, target, depth) {
       li.style.marginLeft = depth ? '20px' : '0'
 
       const div = createDiv()
-      const img = createImg('file-lines.svg')
+      const img = createImg('file.svg')
+      img.classList = 'filter'
       const span = createSpan(item.name)
 
       div.onclick = () => {
@@ -139,9 +143,7 @@ const ulRef = ref()
 
 
 onMounted(async () => {
-  if (ulRef.value) {
-    loadDirHierarchy(path.value, ulRef.value, 0)
-  }
+
 })
 
 const sectionRef = ref()
@@ -153,6 +155,8 @@ watch(sectionRef, (v) => {
   deep: true
 })
 
+
+
 const menu = ref([
   {
     id: 'file',
@@ -160,37 +164,20 @@ const menu = ref([
     submenu: [
       {
         id: 'a',
-        name: '리스트A',
-        icon: 'fa-user',
-        onClick: () => isShowPopup.value = true
-      },
-    ],
-  },
-  {
-    id: 'show',
-    name: '보기',
-    submenu: [
-      {
-        id: 'list',
-        name: '리스트',
-        icon: 'fa-list',
-      },
-      {
-        id: 'icon_big',
-        name: '큰 아이콘',
-        icon: 'fa-cube',
-      },
-      {
-        id: 'icon_small',
-        name: '작은 아이콘',
-        icon: 'fa-cubes',
+        name: '찾기',
+        icon: 'search.svg',
+        onClick: async () => {
+          isShowPopup.value = true;
+        }
       },
     ],
   },
 ]);
 
 defineExpose({
-  menu
+  menu,
+  path: path,
+  state: true
 })
 
 // const computedWidth = computed(() => {
@@ -220,23 +207,30 @@ defineExpose({
 const isActiveCancelButton = ref(false)
 const isActiveSubmitButton = ref(false)
 
-const isShowPopup = ref(false)
+const isShowPopup = ref(true)
+
+watch(ulRef, async (v) => {
+  if (v) {
+    await loadDirHierarchy(path.value, ulRef.value, 0)
+  }
+})
 </script>
 
 <template>
-  <main class="inset scroll">
+  <main class="outline scroll">
     <section ref="sectionRef">
       <article v-html="post"></article>
       <div class="shade"></div>
     </section>
     <div class="popup" v-if="isShowPopup">
-      <section class="outset">
+      <section class="outline">
         <div class="title">검색</div>
-        <input class="inset" placeholder="찾아보세요...">
-        <ul class="dirs inset scroll" ref="ulRef"></ul>
+        <input class="outline" placeholder="찾아보세요...">
+        <ul class="dirs outline scroll" ref="ulRef"></ul>
         <div class="buttons">
           <WindowButton
             name="취소"
+            @click="isShowPopup = false"
           />
           <WindowButton
             name="확인"
@@ -283,45 +277,50 @@ main {
   height: 100%;
   overflow-y: auto;
   font-weight: normal;
-  background-color: white;
+  background-color: black;
 }
 
 main > section {
-  margin-top: 40px;
+  padding: 2px;
+}
+
+article {
+  color: var(--main-color);
   padding: 20px;
 }
 
 main div.popup {
   position: absolute;
-  top: 67px;
+  top: 30px;
   left: 0;
-  background-color: transparent;
   z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 4px;
-  width: calc(100% - 8px);
-  height: calc(100% - 74px);
-  font-family: 'Noto Sans KR';
+  width: 100%;
+  height: calc(100% - 30px);
+  font-family: 'Galmuri9';
+  background-color: var(--system-dark-color-30);
 }
 
 div.popup section {
   width: 300px;
   height: 300px;
-  background-color: var(--system-color);
+  background-color: black;
   position: absolute;
+  color: var(--main-color);
 }
 
 div.popup section div.title {
-  background-color: navy;
+  background-color: var(--main-color);
   width: 100%;
   height: 30px;
-  color: white;
-  font-family: 'Noto Sans KR';
+  color: black;
+  font-family: '던파 비트비트체 TTF';
+  font-size: 16px;
   display: flex;
   align-items: center;
-  font-weight: bold;
+  /* font-weight: bold; */
   padding-left: 10px;
 }
 
@@ -330,6 +329,8 @@ div.popup section input {
   height: 30px;
   margin: 10px;
   outline: none;
+  background-color: black;
+  font-family: '던파 비트비트체 TTF';
 }
 
 div.popup section div.buttons {
@@ -347,10 +348,13 @@ div.popup section div.buttons button {
 }
 
 div.popup section ul.dirs {
-  background-color: white;
+  background-color: black;
   padding: 3px 10px;
   height: calc(100% - 130px);
   margin: 0 10px 10px 10px;
   overflow: auto;
+  font-family: '던파 비트비트체 TTF';
+  font-size: 16px;
+  /* font-weight: bold; */
 }
 </style>

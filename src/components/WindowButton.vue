@@ -15,7 +15,8 @@ const {
 <template>
   <button
     :disabled="disabled"
-    :class="isPushed ? 'inset' : 'outset'"
+    :class="{ pushed : isPushed }"
+    class="outline"
     @mousedown="isPushed = true"
     @mouseup="isPushed = false"
     @mouseleave="isPushed = false"
@@ -23,3 +24,16 @@ const {
     {{ name }}
   </button>
 </template>
+
+<style scoped>
+button {
+  border-style: solid;
+  color: var(--main-color);
+  font-weight: bold;
+
+  &.pushed {
+    background-color: var(--main-color) !important;
+    color: black;
+  }
+}
+</style>

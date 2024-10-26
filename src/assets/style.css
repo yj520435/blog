@@ -1,44 +1,93 @@
 @font-face {
-  font-family: 'Ownglyph_okticon-Bd';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408@1.0/Ownglyph_okticon-Bd.woff2')
-    format('woff2');
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'BMJUA';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMJUA.woff')
-    format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'GilbeotTG';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2112@1.0/GilbeotTG.woff')
-    format('woff');
-  font-weight: normal;
-  font-style: normal;
+  font-family: 'bitbit';
+  src: url('//cdn.df.nexon.com/img/common/font/DNFBitBit-Regular.woff'),
+    url('//cdn.df.nexon.com/img/common/font/DNFBitBit-Regular.woff2');
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Righteous&display=swap');
+@import url('https://fastly.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css');
+
+/* :root {
+  --system-color: #bfbfbf;
+  --system-text-color: #000000;
+
+  --highlight-color: #000080;
+  --hightlight-text-color: #ffffff;
+
+  --outset-color: #bbbbbb;
+  --inset-color: #dddddd;
+
+  --scrollbar-color: #eeeeee;
+} */
 
 :root {
-  --system-color: #bfbfbf;
-  /* --system-color: #eeeeee; */
+  --system-dark-color: #ffffff66;
+  --system-light-color: #e6d8d899;
+  --shadow-color: #dddddd;
+
+  /* --main-color: #9b3674; */
+  /* --main-color: #c02b5c; */
+  --main-color: teal;
+
+  --system-dark-color-10: #00000010;
+  --system-dark-color-30: #00000030;
+
+  --base-cursor: url('@/assets/icons/fill/cursor.svg') 0 0, auto;
+  --point-cursor: url('@/assets/icons/fill/pointer.svg') 0 0, auto;
+  --resize-ns-cursor: url('@/assets/icons/fill/resize-up-down.svg') 0 20, auto;
+  --resize-ew-cursor: url('@/assets/icons/fill/resize-left-right.svg') 10 0, auto;
+
+  /* --system-text-color: #000000c0;
+  --system-background-color: #eeeeee;
+
+  --highlight-color: #000000;
+  --hightlight-text-color: #ffffff;
+
+  --outset-color: #aaaaaa;
+  --inset-color: #ffffff;
+  --border-color: #000000; */
+
+  /* --scrollbar-color: #eeeeee; */
 }
 
 @import url('//fonts.googleapis.com/earlyaccess/notosanskr.css');
 
 * {
   box-sizing: border-box;
+  font-size: 14px;
 }
 
 html,
 body {
   margin: 0;
   user-select: none;
+  cursor: var(--base-cursor);
+}
+
+body {
+  background-color: black;
+  /* background-image: url('@/assets/wallpaper16.jpg'); */
+  /* background-position: center; */
+  /* background-size: cover; */
+  /* background-color: #ffffff; */
+  /* background-image: url('https://www.transparenttextures.com/patterns/beige-paper.png'); */
+  /* This is mostly intended for prototyping; please download the pattern and re-host for production environments. Thank you! */
+}
+
+@font-face {
+  font-family: 'UhBeeRice';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_five@.2.0/UhBeeRice.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'intelone-mono-font-family-regular';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-1@1.1/intelone-mono-font-family-regular.woff2')
+    format('woff2');
+  font-weight: 400;
+  font-style: normal;
 }
 
 @keyframes slide {
@@ -51,68 +100,110 @@ body {
   }
 }
 
-.outset {
+.outline {
+  border: 2px solid var(--main-color);
+}
+
+.filter {
+  filter: invert(26%) sepia(92%) saturate(1838%) hue-rotate(160deg) brightness(90%)
+    contrast(105%);
+}
+
+.nw-resize {
+  cursor: url('@/assets/icons/fill/resize-up-down.svg') 0 20, auto;
+}
+
+/* .outset {
   border-width: 2px !important;
   border-style: outset !important;
-  border-color: #ddd #bbb #bbb #ddd !important;
+  border-top-color: var(--inset-color) !important;
+  border-right-color: var(--outset-color) !important;
+  border-bottom-color: var(--outset-color) !important;
+  border-left-color: var(--inset-color) !important;
 }
 
 .inset {
   border-width: 2px !important;
   border-style: inset !important;
-  border-color: #bbb #ddd #ddd #bbb !important;
+  border-top-color: var(--outset-color) !important;
+  border-right-color: var(--inset-color) !important;
+  border-bottom-color: var(--inset-color) !important;
+  border-left-color: var(--outset-color) !important;
+} */
+
+/* .outset {
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: var(--outset-color) !important;
 }
+
+.inset {
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-top-color: var(--inset-color) !important;
+  border-right-color: var(--inset-color) !important;
+  border-bottom-color: var(--inset-color) !important;
+  border-left-color: var(--inset-color) !important;
+} */
 
 .scroll {
   &::-webkit-scrollbar {
-    background-color: #eeeeee;
+    background-color: black;
+    border-collapse: collapse;
   }
 
-  &::-webkit-scrollbar-track {
-    border-left: 1px solid white;
+  &::-webkit-scrollbar:vertical {
+    /* border-left: 2px solid var(--main-color); */
+  }
+
+  &::-webkit-scrollbar:horizontal {
+    border-top: 2px solid var(--main-color);
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: var(--system-color);
-    border-width: 2px;
-    border-style: outset;
-    border-color: #fff #bbb #bbb #fff;
+    background-color: var(--main-color);
+    border: 2px solid black;
   }
 
+  /* &::-webkit-scrollbar-thumb:vertical {
+    border-right: none;
+  }
+
+  &::-webkit-scrollbar-thumb:horizontal {
+    border-bottom: none;
+  } */
+
   &::-webkit-scrollbar-button {
-    background-color: var(--system-color);
-    border-width: 2px;
-    border-style: outset;
-    border-color: #fff #bbb #bbb #fff;
     background-position: center;
     background-repeat: no-repeat;
   }
 
   &::-webkit-scrollbar-corner {
-    background-color: var(--system-color);
+    background-color: black;
+    border-top: 2px solid var(--main-color);
+    border-left: 2px solid var(--main-color);
   }
 
   &::-webkit-scrollbar-button:single-button:vertical:decrement {
-    background-image: url('/src/assets/icons/caret-up.svg');
+    background-image: url('/src/assets/icons/fill/caret-up.svg');
   }
 
   &::-webkit-scrollbar-button:single-button:vertical:increment {
-    background-image: url('/src/assets/icons/caret-down.svg');
+    background-image: url('/src/assets/icons/fill/caret-down.svg');
   }
 
   &::-webkit-scrollbar-button:single-button:horizontal:decrement {
-    background-image: url('/src/assets/icons/caret-left.svg');
+    background-image: url('/src/assets/icons/fill/caret-left.svg');
   }
 
   &::-webkit-scrollbar-button:single-button:horizontal:increment {
-    background-image: url('/src/assets/icons/caret-right.svg');
+    background-image: url('/src/assets/icons/fill/caret-right.svg');
   }
 }
 
 .focused {
-  border-color: white !important;
-  background-color: navy;
-  color: white;
+  background-color: var(--main-color);
+  color: black;
 }
 
 /* #window  */
@@ -120,7 +211,11 @@ body {
 article {
   h1 {
     font-size: 36px;
-    margin: 10px 0 30px 0;
+    margin: 30px 0;
+
+    &:first-child {
+      margin-top: 0;
+    }
   }
 
   h2 {
@@ -153,4 +248,8 @@ article {
       font-family: 'M PLUS 1 Code';
     }
   }
+}
+
+svg {
+  filter: invert('red');
 }

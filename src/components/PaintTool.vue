@@ -35,55 +35,64 @@ const colors = ref([
 ])
 
 const tools = ref([
-  'fa-vector-square',
-  'fa-draw-polygon',
-  'fa-eraser',
-  'fa-fill-drip',
-  'fa-magic-wand-sparkles',
-  'fa-magnifying-glass',
-  'fa-pencil',
-  'fa-paint-brush',
-  'fa-spray-can-sparkles',
-  'fa-a',
-  'fa-square',
-  'fa-circle',
+  'line/shape.svg',
+  'line/crop.svg',
+  'line/eraser.svg',
+  'fill/paint.svg',
+  'line/magic.svg',
+  'line/search.svg',
+  'line/contrast-drop.svg',
+  'line/font.svg',
+  'fill/pen.svg',
+  'line/brush.svg',
+  'fill/square.svg',
+  'fill/circle.svg'
+  // 'fa-vector-square',
+  // 'fa-draw-polygon',
+  // 'fa-eraser',
+  // 'fa-fill-drip',
+  // 'fa-magic-wand-sparkles',
+  // 'fa-magnifying-glass',
+  // 'fa-pencil',
+  // 'fa-paint-brush',
+  // 'fa-spray-can-sparkles',
+  // 'fa-a',
+  // 'fa-square',
+  // 'fa-circle',
 ])
 
 const clickedTool = ref('')
 </script>
 
 <template>
-  <main class="inset">
+  <main class="outline">
     <section>
-      <section class="tools outset">
+      <section class="tools outline">
         <div
           v-for="tool of tools"
           :key="tool"
-          :class="clickedTool === tool ? 'inset' : 'outset'"
           @click="clickedTool = tool"
          >
-          <FontAwesomeIcon
-            :icon="`fa-solid ${tool}`"
-          />
+          <img :src="require(`@/assets/icons/${tool}`)" :alt="tool">
         </div>
-        <div class="empty inset"></div>
+        <div class="empty outline"></div>
       </section>
-      <section class="wrapper inset">
+      <section class="wrapper outline">
         <div
           class="paper"
         ></div>
       </section>
     </section>
-    <section class="palette outset">
-      <div class="color inset">
-        <div class="inset"></div>
-        <div class="inset"></div>
+    <section class="palette outline">
+      <div class="color outline">
+        <div class="outline"></div>
+        <div class="outline"></div>
       </div>
       <div class="color-list">
         <div
           v-for="color of colors"
           :key="color"
-          class="inset"
+          class="outline"
           :style="`background-color: ${color};`"  
         ></div>
       </div>
@@ -95,16 +104,16 @@ const clickedTool = ref('')
 <style scoped>
 main {
   display: grid;
-  grid-template-rows: 1fr 50px;
-  padding: 1px;
+  grid-template-rows: 1fr 52px;
+  padding: 2px;
   background-color: var(--system-color);
   height: 100%;
-  gap: 1px;
+  gap: 2px;
 
   > section:first-child {
     display: grid;
     grid-template-columns: 70px 1fr;
-    gap: 1px;
+    gap: 2px;
 
     .tools {
       background-color: var(--system-color);
@@ -122,6 +131,10 @@ main {
         align-items: center;
         font-size: 16px;
         cursor: pointer;
+
+        img {
+          width: 22px;
+        }
       }
 
       div.inset {
@@ -142,7 +155,7 @@ main {
 
       .paper {
         width: 400px;
-        height: 250px;
+        height: 260px;
         background-color: white;
         border: 1px dotted black;
         cursor: not-allowed;
@@ -152,7 +165,7 @@ main {
 
   > section.palette {
     display: grid;
-    grid-template-columns: 46px 1fr 220px;
+    grid-template-columns: 46px 320px 1fr;
     height: fit-content;
     padding: 2px;
 
@@ -167,14 +180,14 @@ main {
       }
 
       > div:first-child {
-        background-color:  navy;
+        background-color:  black;
         top: 4px;
         left: 4px;
         z-index: 10;
       }
 
       > div:last-child {
-        background-color: blue;
+        background-color: white;
         top: -8px;
         left: 15px;
       }
@@ -183,7 +196,7 @@ main {
     div.color-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 1px;
+      gap: 2px;
 
       div {
         width: 21px;

@@ -11,34 +11,35 @@ const isStartButtonClicked = ref(false);
 const isHovered = ref(false)
 
 const startPrograms = ref([
-  { id: 'disk', name: '디스크 조각모음', icon: 'defragment-0.png' },
-  { id: 'windowUpdate', name: '윈도우 업데이트', icon: 'windows_update_large-2.png' },
-  {
+    // { id: 'disk', name: '디스크 조각모음', icon: 'defragment-0.png' },
+    // { id: 'windowUpdate', name: '윈도우 업데이트', icon: 'windows_update_large-2.png' },
+    {
     id: 'paintTool',
     name: '그림판',
-    icon: 'paint_old-0.png',
+    icon: 'brush.svg',
     items: [],
     component: PaintTool
   },
-  { id: 'myMusic', name: '내 음악', icon: 'cd_audio_cd_a-4.png' },
+  { id: 'myMusic', name: '내 음악', icon: 'music-note.svg' },
   {
     id: 'notepad',
     name: '메모장',
-    icon: 'notepad-5.png',
+    icon: 'file.svg',
     items: ['menu'],
     component: NotePad
   },
   {
     id: 'internet',
     name: '인터넷 익스플로러',
-    icon: 'msie1-2.png',
+    // icon: 'msie1-2.png',
+    icon: 'internet-explorer.svg',
     items: ['menu', 'address'],
     component: InternetExplorer
   },
-  { id: 'package', name: '실행 프로그램', icon: 'package-1.png' },
-  { id: 'settings', name: '설정', icon: 'gears_tweakui_b.png' },
-  { id: 'search', name: '검색', icon: 'search_directory-5.png' },
-  { id: 'help', name: '도움말', icon: 'help_book_cool-4.png' }
+  // { id: 'package', name: '실행 프로그램', icon: 'package-1.png' },
+  { id: 'settings', name: '설정', icon: 'tool.svg' },
+  { id: 'search', name: '검색', icon: 'search.svg' },
+  // { id: 'help', name: '도움말', icon: 'help_book_cool-4.png' }
 ])
 
 function onMouseDown() {
@@ -52,38 +53,35 @@ window.addEventListener('click', onMouseDown)
 </script>
 
 <template>
-  <!-- 작업표시줄 -->
   <section id="task-bar">
-    <!-- 시작 버튼 -->
+    <!-- START BUTTON -->
     <button
       @mousedown="isStartButtonClicked = !isStartButtonClicked"
       @mouseenter="isHovered = true"
-      :class="isStartButtonClicked ? 'inset' : 'outset'"
     >
-      <img :src="require('@/assets/icons/windows-0.png')" alt="" />시작
+      <img :src="require('@/assets/icons/fill/sparkling.svg')" alt="" class="filter" />시작
     </button>
-    <hr>
-    <!-- 활성화된 프로그램 목록 -->
+    <!-- ACTIVATED PROGRAM LIST -->
     <div id="tasks">
       <div
         v-for="program of programs"
         :key="program.id"
-        :class="activatedProgram === program.id ? 'inset' : 'outset'"
+        :class="{ outline: activatedProgram === program.id }"
       >
         <img
-          :src="require(`@/assets/icons/${program.icon}`)"
+          :src="require(`@/assets/icons/fill/${program.icon}`)"
           alt=""
+          class="filter"
         > {{ program.name }}
       </div>
     </div>
     <!-- 상태 표시 영역 -->
-    <hr>
     <div id="status" class="inset">
-      <div>
+      <!-- <div>
         <img :src="require('@/assets/icons/computer_taskmgr-0.png')" alt="" />
         <img :src="require('@/assets/icons/loudspeaker_rays-0.png')" alt="" />
         <img :src="require('@/assets/icons/calendar-3.png')" alt="" />
-      </div>
+      </div> -->
       <span>오전 12:37</span>
     </div>
   </section>
@@ -91,36 +89,55 @@ window.addEventListener('click', onMouseDown)
   <div
     v-if="isStartButtonClicked" 
     id="start-programs"
-    class="outset"
   >
-    <aside />
     <ul
       @mouseenter="isHovered = true"
       @mouseleave="isHovered = false"
-    >
+      >
       <li
         v-for="(program, index) of startPrograms"
+        :key="program.id"
+        :style="`animation-delay: ${0.6 - (0.1 * index)}s;`"
+        class="outline"
+      >
+        <span class="item">
+          <img :src="require(`@/assets/icons/${program.icon}`)" alt="icon"> {{ program.name }}
+        </span>
+      </li>
+      <!-- <li
+        v-for="program of startPrograms"
         :key="program.id"
         @click="
           emit('open', program);
           isStartButtonClicked = false
         "
       >
-        <span v-if="[2, 7].includes(index)" class="hr"><hr /></span>
         <span class="item">
           <img :src="require(`@/assets/icons/${program.icon}`)" alt="icon"> {{ program.name }}
         </span>
-      </li>
+      </li> -->
     </ul>
   </div>
 </template>
 
 <style scoped>
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+    left: -200px;
+  }
+
+  100% {
+    opacity: 1;
+    left: 0;
+  }
+}
+
 #task-bar {
-  background-color: var(--system-color);
-  box-shadow: 0px -2px 0px white;
+  box-shadow: 0px -2px 0px var(--main-color);
   display: grid;
-  grid-template-columns: 88px 10px 1fr 10px 206px;
+  grid-template-columns: 88px 1fr 206px;
 
   button {
     height: 36px;
@@ -135,10 +152,13 @@ window.addEventListener('click', onMouseDown)
     justify-content: center;
     width: 80px;
     outline: none;
+    border: none !important;
+    color: var(--main-color);
 
     img {
-      width: 25px;
-      height: 25px;
+      width: 26px;
+      height: 26px;
+      /* filter: invert(100%) sepia(0%) saturate(17%) hue-rotate(334deg) brightness(105%) contrast(105%); */
     }
   }
 
@@ -158,9 +178,10 @@ window.addEventListener('click', onMouseDown)
       width: 30%;
       min-width: 100px;
       max-width: 200px;
+      color: var(--main-color);
    
-      &.inset {
-        background-color: #dddddd;
+      &.activated {
+        border-color: var(--main-color);
       }
 
       img {
@@ -200,47 +221,42 @@ window.addEventListener('click', onMouseDown)
 
 #start-programs {
   position: absolute;
-  background-color: var(--system-color);
   font-family: 'Noto Sans KR';
   font-size: 14px;
   font-weight: bold;
   bottom: 43px;
   width: 360px;
-  display: grid;
-  grid-template-columns: 30px 1fr;
   z-index: 10;
+  margin: 6px 3px;
+  background-color: transparent;
 
   aside {
-    background: linear-gradient(navy, blue);
+    background: black; /* linear-gradient(black, white); */
   }
 
   ul {
     padding: 0;
     margin: 0;
     list-style: none;
-
-    /* hr {
-      border: 2px inset white;
-      margin: 7px 10px;
-    } */
+    width: 260px;
 
     li {
-      span.hr {
-        hr {
-          margin: 7px 10px;
-        }
-      }
+      position: relative;
+      margin: 2px 0;
+      opacity: 0;
+      background-color: var(--system-color);
+      animation: appear 0.5s forwards;
 
       span.item {
         display: inline-flex;
         width: 100%;
-        height: 60px;
+        height: 50px;
         align-items: center;
         padding: 0 15px;
 
         img {
-          width: 40px;
-          height: 40px;
+          width: 26px;
+          height: 26px;
           margin-right: 15px;
         }
 

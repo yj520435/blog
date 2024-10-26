@@ -1,13 +1,7 @@
 <script setup>
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { onMounted, ref, defineProps, defineEmits, computed, watch } from 'vue';
-import WindowFrame from '@/components/WindowFrame.vue'
-import { Folder, getFile, NotePadFile } from './Program';
+import { onMounted, ref, defineProps, defineExpose, computed, watch } from 'vue';
 import { useStore } from '@/store';
-import dayjs from 'dayjs';
-import { getFiles } from '@/utils';
-import WindowMenu from './WindowMenu.vue';
-import WindowPath from './WindowPath.vue';
+import { getFiles, loadDir } from '@/utils';
 
 const props = defineProps(['on']);
 
@@ -79,6 +73,8 @@ const myFiles = ref([])
 //   console.log('>> myFiles', myFiles.value)
 // }
 
+
+
 const store = useStore()
 
 async function open(file) {
@@ -88,12 +84,12 @@ async function open(file) {
   else {
     path.value += `/${file.name}`
     myFiles.value = []
-    myFiles.value = await getFiles(path.value)
+    myFiles.value = await loadDir(path.value)
   }
 }
 
 onMounted(async () => {
-  myFiles.value = await getFiles(path.value)
+  myFiles.value = await loadDir(path.value)
 })
 
 const menu = ref([
@@ -115,29 +111,34 @@ const menu = ref([
       {
         id: 'list',
         name: '리스트',
-        icon: 'fa-list',
+        icon: 'list.svg',
       },
       {
         id: 'icon_big',
         name: '큰 아이콘',
-        icon: 'fa-cube',
+        icon: 'layout-grid-large.svg',
       },
       {
         id: 'icon_small',
         name: '작은 아이콘',
-        icon: 'fa-cubes',
+        icon: 'layout-grid-small.svg',
       },
     ],
   },
 ]);
+
+defineExpose({
+  menu,
+  tools: true,
+  state: true,
+  path: path.value
+})
 </script>
 
 <template>
-  <WindowMenu :menu="menu"/>
-  <WindowPath />
   <main
     ref="mainRef"
-    class="inset scroll"
+    class="outline scroll"
   >
     <!-- 큰 아이콘 -->
     <section class="icon-lg">
@@ -145,108 +146,88 @@ const menu = ref([
         v-for="file of myFiles"
         :key="file.id"
         :style="iconStyle"
-        :class="{ clicked: clickedFile === file.id }"
+        :class="{
+          clicked: clickedFile === file.id
+        }"
         :title="file.name"
         class="icon"
         @click="clickedFile = file.id"
         @dblclick="open(file)"
       >
         <img
-          :src="require(`@/assets/icons/${file.icon}`)"
+          :src="require(`@/assets/icons/line/${file.icon}`)"
           alt="file.title"
+          class="filter"
         />
         <span>{{ file.name }}</span>
       </div>
-      <!-- <div
-        v-for="i of 3"
-        :key="i"
-        class="icon"
-        :style="iconStyle"
-      >
-        <img :src="require('@/assets/icons/notepad_file-2.png')" alt="" />
-        <span>메모장</span>
-      </div> -->
     </section>
   </main>
-  <!-- <div class="bubble outset">
-    <ul>
-      <li>HTML로 열기</li>
-    </ul>
-  </div> -->
-  <!-- <WindowFrame
-    v-if="props.on" 
-    :title="title"
-    menu
-    address
-    @off="() => {
-      console.log('off')
-    }"
-  /> -->
 </template>
 
 <style scoped>
 
 main {
-  margin: 2px;
-  height: calc(100% - 73px);
-  background-color: white;
-}
+  height: 100%;
+  background-color: black;
 
-section {
-  width: 100%;
-  padding: 5px;
-}
+  section.icon-lg {
+    display: flex;
+    flex-wrap: wrap;
 
-.icon {
-  /* margin: 10px 0px; */
-  display: flex;
-  flex-direction: column;
-  color: black;
-  font-family: 'Noto Sans KR';
-  font-size: 14px;
-  gap: 5px;
-  font-weight: bold;
-  width: 80px;
-  padding: 5px;
-  justify-content: start;
-  align-items: center;
-  text-align: center;
-  cursor: pointer;
-  border: 1px solid transparent;
+    .icon {
+      display: flex;
+      flex-direction: column;
+      color: var(--main-color);
+      font-family: 'Noto Sans KR';
+      font-size: 14px;
+      gap: 5px;
+      font-weight: bold;
+      width: 80px;
+      padding: 5px;
+      justify-content: start;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid transparent;
 
-  span {
-    display: inline-block;
-    border: 1px solid transparent;
-    padding-bottom: 2px;
-    max-width: 80px;
-    /* text-wrap: wrap; */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+      span {
+        display: inline-block;
+        border: 1px solid transparent;
+        padding-bottom: 2px;
+        max-width: 80px;
+        /* text-wrap: wrap; */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
-  &.clicked {
-    span {
-      background-color: navy;
-      padding: 0 3px 2px 3px;
-      border: 1px dotted lightgrey;
-      color: white;
-      overflow: visible;
-      text-overflow: unset;
-      white-space: unset;
-      position: relative;
+      img {
+        width: 40px;
+        height: 40px;
+        /* filter: invert(22%) sepia(95%) saturate(2040%) hue-rotate(95deg) brightness(100%) contrast(108%); */
+      }
+
+      &.clicked {
+        span {
+          background-color: black;
+          padding: 0 3px 2px 3px;
+          /* border: 1px dotted lightgrey; */
+          /* border-radius: 9px; */
+          color: white;
+          overflow: visible;
+          text-overflow: unset;
+          white-space: unset;
+          position: relative;
+        }
+      }
     }
   }
 }
 
-section.icon-lg {
-  display: flex;
-  flex-wrap: wrap;
-}
-
 .bubble {
   position: absolute;
-  background-color: var(--system-color);
+  background-color: var(--system-light-color);
   z-index: 11;
   width: 160px;
 

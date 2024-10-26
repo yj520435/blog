@@ -8,7 +8,19 @@ const emit = defineEmits(['close', 'minimize', 'align']);
 
 const program = toValue(props.program)
 
-const windowObject = ref({ x: 150, y: 50, width: 600, height: 450 });
+const folderIcons = [
+  ['arrow-left', 'arrow-right', 'corner-right-up',],
+  ['copy', 'clipboard', 'scissors'],
+  ['refresh', 'trash-can'],
+  ['layout-grid-large', 'layout-grid-small', 'list'],
+]
+
+const windowObject = ref({
+  x: 150 + 20 * program.index,
+  y: 50 + 20 * program.index,
+  width: 600,
+  height: 450
+});
 const windowPositionBackup = ref({ ...windowObject.value });
 // const fixedPosition = ref({ ...windowObject.value });
 const initMousePosition = ref({ x: 0, y: 0 });
@@ -82,96 +94,74 @@ const cursorStyle = computed(() => {
   else if ((resizable.value.n && resizable.value.w) || (resizable.value.s && resizable.value.e))
     return 'nwse-resize'
   else if (resizable.value.n || resizable.value.s)
-    return 'ns-resize'
+    return '--resize-ns-cursor'
   else if (resizable.value.e || resizable.value.w)
-    return 'ew-resize'
+    return '--resize-ew-cursor'
   else
-    return 'default'
+    return '--base-cursor'
 })
-
-function getCursor(ewResizable, nsResizable) {
-  if (!ewResizable && !nsResizable)
-    return 'default'
-  else
-    return ewResizable ? 'ew-resize' : 'ns-resize'
-}
 
 watch(movable, (v) => {
   if (v)
     resizable.value = { n: false, w: false, e: false, s: false }
 })
 
-onMounted(() => {
-  window.addEventListener('mousemove', (event) => {
-    if (isMouseDowned.value) {
-      const movedX = event.x - initMousePosition.value.x;
-      const movedY = event.y - initMousePosition.value.y;
+function onMouseMove(event) {
+  if (isMouseDowned.value) {
+    const movedX = event.x - initMousePosition.value.x;
+    const movedY = event.y - initMousePosition.value.y;
 
-      if (movable.value) {
-        windowObject.value.x = windowPositionBackup.value.x + movedX;
-        windowObject.value.y = windowPositionBackup.value.y + movedY;
-      }
-      else {
-        if (resizable.value.n) {
-          windowObject.value.height = windowPositionBackup.value.height - movedY
-          windowObject.value.y = windowPositionBackup.value.y + movedY
-        }
-
-        if (resizable.value.s) {
-          windowObject.value.height = windowPositionBackup.value.height + movedY
-        }
-
-        if (resizable.value.w) {
-          windowObject.value.width = windowPositionBackup.value.width - movedX
-          windowObject.value.x = windowPositionBackup.value.x + movedX
-        }
-
-        if (resizable.value.e) {
-          windowObject.value.width = windowPositionBackup.value.width + movedX
-        }
-      }
+    if (movable.value) {
+      windowObject.value.x = windowPositionBackup.value.x + movedX;
+      windowObject.value.y = windowPositionBackup.value.y + movedY;
     }
     else {
-      resizable.value = {
-        n: Math.abs(event.y - windowObject.value.y) < 4 && !movable.value,
-        s: Math.abs(event.y - (windowObject.value.y + windowObject.value.height)) < 4,
-        w: Math.abs(event.x - windowObject.value.x) < 4,
-        e: Math.abs(event.x - (windowObject.value.x + windowObject.value.width)) < 4,
+      if (resizable.value.n) {
+        windowObject.value.height = windowPositionBackup.value.height - movedY
+        windowObject.value.y = windowPositionBackup.value.y + movedY
+      }
+
+      if (resizable.value.s) {
+        windowObject.value.height = windowPositionBackup.value.height + movedY
+      }
+
+      if (resizable.value.w) {
+        windowObject.value.width = windowPositionBackup.value.width - movedX
+        windowObject.value.x = windowPositionBackup.value.x + movedX
+      }
+
+      if (resizable.value.e) {
+        windowObject.value.width = windowPositionBackup.value.width + movedX
       }
     }
-  });
+  }
+  else {
+    const diffTop = event.y - (windowObject.value.y + windowObject.value.height)
+    const diffBottom = event.y - windowObject.value.y
+    const diffLeft = event.x - windowObject.value.x
+    const diffRight = event.x - (windowObject.value.x + windowObject.value.width)
 
+    resizable.value = {
+      n: diffBottom > -10 && diffBottom < 3 && !movable.value,
+      s: diffTop > -11 && diffTop < 3,
+      w: diffLeft > -16 && diffLeft < 0,
+      e: diffRight > -20 && diffRight < -10,
+    }
+    
+    document.body.style.cursor = `var(${cursorStyle.value})`
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mousedown', onMouseDown)
   window.addEventListener('mouseup', onMouseUp)
 
-  // window.addEventListener('mouseup', (event) => {
-  //   movable.value = false;
-  //   resizable.value = { ns: false, ew: false }
-
-  //   for (const button of ['minimize', 'maximize', 'close'])
-  //     isButtonPushed.value[button] = false;
-
-  //   windowPositionBackup.value = { ...windowObject.value }
-  // });
+  menu.value = componentRef.value.menu
+  state.value = componentRef.value.state
+  tools.value = componentRef.value.tools
+  path.value = componentRef.value.path
 });
-
-// const computedGridTemplateRows = computed(() => {
-//   let gridTemplateRows = ['36px']
-
-//   if (program.items.includes('menu'))
-//     gridTemplateRows.push('36px')
-
-//   // if (program.items.includes('tools'))
-//   //   gridTemplateRows.push('auto')
-  
-//   if (program.items.includes('address'))
-//     gridTemplateRows.push('36px')
-
-//   gridTemplateRows.push('1fr;')
-
-//   return gridTemplateRows.join(' ')
-// })
-
 
 const componentRef = ref()
 const bodyRef = ref()
@@ -196,103 +186,112 @@ function onMouseDown(event) {
 }
 
 const menu = ref()
+const state = ref()
+const tools = ref()
 const path = ref()
+
 const hoveredMenu = ref()
 const clickedMenu = ref()
+const hoveredSubMenu = ref()
 
-onMounted(() => {
-  menu.value = componentRef.value.menu
-})
-
+const windowRef = ref()
 </script>
 
 <template>
   <div
-    id="window"
-    class="outset"
+    class="window outline"
+    :class="props.activated ? 'activated' : 'inactivated'"
     :style="`
       top: ${windowObject.y}px;
       left: ${windowObject.x}px;
       width: ${windowObject.width}px;
       height: ${windowObject.height}px;
-      cursor: ${cursorStyle};
     `"
   >
     <!-- TITLE -->
     <div
       class="title"
-      :class="{ activated : props.activated }"
       @mousedown="movable = true;"
       @mouseup="movable = false"
     >
-      <img :src="require(`@/assets/icons/${program.icon}`)" alt="" />
+      <img :src="require(`@/assets/icons/fill/${program.icon}`)" alt=""/>
       <span>{{ program.name }}</span>
       <button
-        @mousedown="isButtonPushed.minimize = true"
-        @click="emit('minimize')"
-        :class="isButtonPushed.minimize ? 'inset' : 'outset'"
+
       >
-        <FontAwesomeIcon icon="fa-solid fa-window-minimize" />
+      <!-- @mousedown="isButtonPushed.minimize = true"
+      @click="emit('minimize')" -->
       </button>
       <button
-        @mousedown="isButtonPushed.maximize = true"
-        @click="setWindowSize"
-        :class="isButtonPushed.maximize ? 'inset' : 'outset'"
       >
-        <FontAwesomeIcon
-          :icon="isWindowMaximized ? 'fa-solid fa-minus' : 'fa-solid fa-plus'"
-        />
+      <!-- @mousedown="isButtonPushed.maximize = true"
+      @click="setWindowSize" -->
       </button>
       <button
         @mousedown="isButtonPushed.close = true"
         @click="emit('close', program.id)"
-        :class="isButtonPushed.close ? 'inset' : 'outset'"
       >
-        <FontAwesomeIcon icon="fa-solid fa-xmark" />
+        <img :src="require('@/assets/icons/line/close.svg')" :alt="close">
       </button>
     </div>
     <!-- MENU -->
-    <div class="menu">
-      <div class="outset">
-        <WindowDropdown
+    <div
+      v-if="menu"
+      class="menu"
+    >
+      <div class="lt outline">
+        <div
           v-for="item of menu"
           :key="item.id"
-          :item="item"
-        />
-      </div>
-      <!-- <div class="item outset">
-        <div v-for="item of menu" :key="item.id">
-          <div
-            class="title"
-            @mouseover="hoveredMenu = item.id"
-            @mousedown="clickedMenu = item.id"
-            @mouseleave="hoveredMenu = ''"
-            :class="{
-              outset : hoveredMenu === item.id,
-              inset : clickedMenu === item.id
-            }"
-          >
-            {{ item.name }}
-          </div>
+          class="item"
+          @mouseover="hoveredMenu = item.id"
+          @mouseout="hoveredMenu = ''"
+          @click="clickedMenu = (clickedMenu === item.id) ? '' : item.id"
+        >
+          <span>{{ item.name }}</span>
           <ul
             v-if="clickedMenu === item.id"
-            class="subitem"
-            :style="`height: ${item.submenu.length * 30}px;`"
+            class="subitem outline"
+            :style="`height: ${item.submenu.length * 30}px`"
           >
             <li
               v-for="subitem of item.submenu"
               :key="subitem.id"
-              @click="subitem.onClick"
+              :class="{ focused : hoveredSubMenu === subitem.id }"
+              @mouseover="hoveredSubMenu = subitem.id"
+              @mouseout="hoveredSubMenu = ''"
+              @click="subitem.onClick()"
             >
-            <FontAwesomeIcon :icon="`fa-solid ${subitem.icon}`" />
-              <span>{{ subitem.name }}</span>
+              <img :src="require(`@/assets/icons/line/${subitem.icon}`)" alt=""> {{ subitem.name }}
             </li>
           </ul>
         </div>
-      </div> -->
+      </div>
+      <div class="rt outline">
+        <img
+          :src="require('@/assets/icons/fill/windows.svg')"
+          class="filter"
+          alt=""
+        />
+      </div>
     </div>
-    <!--
-      <div class="tools">
+    <!-- <div class="tools">
+      <div
+        class="outline"
+        v-for="(icons, i) of folderIcons"
+        :key="i"
+      >
+        <button v-for="icon of icons" :key="icon">
+          <img :src="require(`@/assets/icons/${icon}.svg`)" alt="">
+        </button>
+      </div>
+    </div> -->
+    <div class="path" v-if="path">
+      <div class="outline">주소</div>
+      <input class="outline" :value="path" disabled>
+    </div>
+    
+      <!-- <div class="tools">
         <div class="outset">
           <button>
             <FontAwesomeIcon :icon="`fa-solid fa-arrow-left`"/>
@@ -307,104 +306,266 @@ onMounted(() => {
         <div class="outset"></div>
         <div class="outset"></div>
         <div class="outset"></div>
-      </div>
-    -->
+      </div> -->
+   
     <div class="body">
       <component
         ref="componentRef"
         :is="toRaw(program.component)"
       />
     </div>
+    <div v-if="state" class="state">
+      <div
+        v-for="i of 4"
+        :key="i"
+        class="outline"
+      >
+      </div>
+    </div>
+    <!-- <div
+        class="border-top" :style="`top: -8px; cursor: var(${cursorStyle})`"
+        @mouseover="resizable.n = true"
+        @mouseleave="() => {
+          if (!isMouseDowned) {
+            resizable.n = false
+          }
+        }"
+      ></div>
+      <div class="border-left" :style="`left: -2px`"></div>
+      <div class="border-right" :style="`left: ${windowObject.width - 4}px`"></div>
+      <div class="border-bottom" :style="`top: ${windowObject.height - 4}px`"></div> -->
   </div>
 </template>
 
 <style scoped>
-#window {
+  .border-top,
+  .border-bottom {
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background-color: red;
+  }
+
+  .border-left,
+  .border-right {
+    position: absolute;
+    width: 4px;
+    height: 100%;
+    background-color: blue;
+  }
+
+
+
+.border-left {
+  height: 100%;
+  width: 2px;
+}
+
+.window {
   position: absolute;
   top: 0;
-  font-family: 'Noto Sans KR';
-  font-size: 14px;
-  font-weight: bold;
-  background-color: var(--system-color);
+  font-family: 'Galmuri9';
+  background-color: black;
   box-shadow: 0px 0px 3px #494949;
   display: flex;
   flex-direction: column;
   min-height: 240px;
   min-width: 400px;
-}
-
-#window > .title {
-  background: grey;
-  background: linear-gradient(90deg, grey 0%, lightgrey 100%);
-  color: white;
-  display: grid;
-  align-items: center;
-  width: 100%;
-  padding: 6px 1px 6px 5px;
-  grid-template-columns: 28px 1fr 28px 28px 28px;
 
   &.activated {
-    background: navy;
-    background: linear-gradient(90deg, navy 0%, navy 100%);
+    .title {
+      /* background: var(--system-dark-color); */
+      background: var(--main-color);
+    }
+  }
+  
+  .title {
+    background: linear-gradient(90deg, grey 0%, lightgrey 100%);
+    color: black;
+    display: grid;
+    align-items: center;
+    width: 100%;
+    padding: 3px 6px;
+    grid-template-columns: 28px 1fr 22px 22px 22px;
+    border: 2px solid black;
+    border-bottom: none;
+    font-weight: bold;
+
+    > img {
+      width: 22px;
+      height: 22px;
+      margin: 0 2px;
+      /* filter: invert(100%) sepia(0%) saturate(17%) hue-rotate(334deg) brightness(105%) contrast(105%); */
+      /* filter: invert(22%) sepia(95%) saturate(2040%) hue-rotate(95deg) brightness(100%) contrast(108%); */
+    }
+    
+    button {
+      padding: 0;
+      margin: 0;
+      width: 22px;
+      height: 22px;
+      font-weight: bold;
+      border: none;
+      background-color: transparent;
+      cursor: var(--point-cursor);
+      
+      img {
+        /* filter: invert(100%) sepia(0%) saturate(17%) hue-rotate(334deg) brightness(105%) contrast(105%); */
+        /* filter: invert(22%) sepia(95%) saturate(2040%) hue-rotate(95deg) brightness(100%) contrast(108%); */
+      }
+    }
+  }
+
+  .menu {
+    margin: 2px;
+    display: grid;
+    grid-template-columns: 1fr 60px;
+    gap: 2px;
+    font-weight: bold;
+
+    .lt {
+      display: flex;
+      align-items: center;
+
+      .item {
+        width: 60px;
+        border: 2px solid transparent;
+        margin: 2px;
+        text-align: center;
+        color: var(--main-color);
+
+        .subitem {
+          position: absolute;
+          background-color: black;
+          color: var(--main-color);
+          list-style: none;
+          top: 66px;
+          margin: 0;
+          padding: 0;
+          width: 160px;
+          display: flex;
+          flex-direction: column;
+          animation: 0.4s slide forwards;
+          overflow: hidden;
+          z-index: 2;
+
+          li {
+            display: flex;
+            align-items: center;
+            height: 30px;
+            padding: 0 10px;
+
+            img {
+              height: 16px;
+              margin-right: 6px;
+            }
+
+            &:hover {
+              background-color: var(--system-dark-color);
+              color: var(--system-light-color);
+
+              img {
+                filter: invert(100%) sepia(0%) saturate(17%) hue-rotate(334deg) brightness(105%) contrast(105%);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .rt {
+      /* background-color: #7e7e7e; */
+      /* background: radial-gradient(circle, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 70%); */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      height: 32px;
+
+      img {
+        width: 26px;
+        /* filter: invert(100%) sepia(0%) saturate(17%) hue-rotate(334deg) brightness(105%) contrast(105%); */
+        /* filter: invert(22%) sepia(95%) saturate(2040%) hue-rotate(95deg) brightness(100%) contrast(108%); */
+      }
+    }
+  }
+
+  .tools {
+    margin: 2px;
+    display: grid;
+    grid-template-columns: 3fr 3fr 2fr 3fr;
+    gap: 2px;
+
+    div {
+      padding: 0 9px;
+      display: flex;
+      justify-content: space-between;
+
+      button {
+        padding: 6px 10px 3px 10px;
+        border: none;
+        background-color: transparent;
+
+        img {
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+  }
+  
+  .path {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    margin: 0 2px;
+    gap: 2px;
+    align-items: center;
+    background-color: black;
+    color: var(--main-color);
+    font-size: 14px;
+    font-weight: bold;
+    
+    div {
+      padding: 4px 10px 4px 20px;
+    }
+
+    input {
+      padding: 4px 10px 5px 10px;
+      font-weight: bold;
+      background-color: black;
+    }
+  
+    /* input {
+      margin: 0;
+      padding: 4px 10px;
+      width: calc(100% - 68px);
+      outline: none;
+      background-color: #ffffff;
+      border: none;
+      font-weight: bold;
+    } */
+  }
+
+  .body {
+    height: 100%;
+    overflow-y: hidden;
+    margin: 2px;
+  }
+
+  .state {
+    height: 34px;
+    display: grid;
+    grid-template-columns: 1fr 26px 26px 80px;
+    margin: 0 2px 2px 2px;
+    gap: 2px;
+
+    div {
+      background-color: black;
+    }
   }
 }
 
-#window > .title img {
-  width: 22px;
-  height: 22px;
-  margin: 0 2px;
-}
 
-#window > .title button {
-  padding: 0;
-  line-height: 0;
-  margin: 0 2px;
-  background-color: var(--system-color);
-  width: 22px;
-  height: 22px;
-  font-weight: bold;
-
-  &.pushed {
-    border: 2px inset white;
-  }
-}
-
-.wrapper {
-  height: 100%;
-  background-color: var(--system-color);
-  padding: 3px;
-  display: grid;
-  grid-template-rows: 50px 50px 1fr;
-}
-
-.tools {
-  padding: 2px;
-  display: grid;
-  height: 100%;
-  grid-template-columns: 3fr 1fr 4fr 1fr;
-  align-items: center;
-  button {
-    background-color: var(--system-color);
-    width: 60px;
-    font-size: 30px;
-    color: #494949;
-    border: none;
-  }
-}
-
-.body {
-  height: 100%;
-  overflow-y: hidden;
-  margin: 2px;
-}
-
-.menu {
-  padding: 2px;
-}
-
-.menu > div {
-  display: flex;
-}
 
 /* .body {
   border: 2px solid var(--system-color);
