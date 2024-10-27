@@ -52,9 +52,18 @@
 
 @import url('//fonts.googleapis.com/earlyaccess/notosanskr.css');
 
+@font-face {
+  font-family: 'DungGeunMo';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 * {
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: 16px;
+  font-family: 'DungGeunMo';
 }
 
 html,

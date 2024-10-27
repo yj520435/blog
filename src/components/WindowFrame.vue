@@ -227,12 +227,12 @@ const windowRef = ref()
       <!-- @mousedown="isButtonPushed.maximize = true"
       @click="setWindowSize" -->
       </button>
-      <button
+      <!-- <button
         @mousedown="isButtonPushed.close = true"
         @click="emit('close', program.id)"
       >
         <img :src="require('@/assets/icons/line/close.svg')" :alt="close">
-      </button>
+      </button> -->
     </div>
     <!-- MENU -->
     <div
@@ -287,7 +287,7 @@ const windowRef = ref()
       </div>
     </div> -->
     <div class="path" v-if="path">
-      <div class="outline">주소</div>
+      <div class="outline">Path</div>
       <input class="outline" :value="path" disabled>
     </div>
     
@@ -364,7 +364,6 @@ const windowRef = ref()
 .window {
   position: absolute;
   top: 0;
-  font-family: 'Galmuri9';
   background-color: black;
   box-shadow: 0px 0px 3px #494949;
   display: flex;
@@ -389,7 +388,6 @@ const windowRef = ref()
     grid-template-columns: 28px 1fr 22px 22px 22px;
     border: 2px solid black;
     border-bottom: none;
-    font-weight: bold;
 
     > img {
       width: 22px;
@@ -404,7 +402,7 @@ const windowRef = ref()
       margin: 0;
       width: 22px;
       height: 22px;
-      font-weight: bold;
+      
       border: none;
       background-color: transparent;
       cursor: var(--point-cursor);
@@ -421,7 +419,6 @@ const windowRef = ref()
     display: grid;
     grid-template-columns: 1fr 60px;
     gap: 2px;
-    font-weight: bold;
 
     .lt {
       display: flex;
@@ -522,28 +519,15 @@ const windowRef = ref()
     align-items: center;
     background-color: black;
     color: var(--main-color);
-    font-size: 14px;
-    font-weight: bold;
     
     div {
-      padding: 4px 10px 4px 20px;
+      padding: 4px 10px 4px 17px;
     }
 
     input {
-      padding: 4px 10px 5px 10px;
-      font-weight: bold;
+      padding: 4px 10px 4px 10px;
       background-color: black;
     }
-  
-    /* input {
-      margin: 0;
-      padding: 4px 10px;
-      width: calc(100% - 68px);
-      outline: none;
-      background-color: #ffffff;
-      border: none;
-      font-weight: bold;
-    } */
   }
 
   .body {
@@ -563,96 +547,5 @@ const windowRef = ref()
       background-color: black;
     }
   }
-}
-
-
-
-/* .body {
-  border: 2px solid var(--system-color);
-  background-color: white;
-  overflow: hidden; */
-  /* border-top: none; */
-  /* overflow-y: auto; */
-/* } */
-
-/*
-.menu {
-  display: grid;
-  align-items: center;
-  background-color: var(--system-color);
-  margin: 2px 2px 0 2px;
-  border-bottom: none !important;
-  height: 33px;
-
-  div.item {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    height: 100%;
-
-    > div {
-      cursor: pointer;
-      width: fit-content;
-      text-align: center;
-
-      .title {
-        padding: 1px 15px 2px 15px;
-        border: 2px solid transparent;
-      }
-
-      ul.subitem {
-        position: absolute;
-        background-color: var(--system-color);
-        list-style: none;
-        top: 69px;
-        margin: 0;
-        padding: 0;
-        width: 160px;
-        border: 1px outset white;
-        animation: 0.3s slide forwards;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-
-        > li {
-          border: 1px outset white;
-          display: flex;
-          align-items: center;
-          height: 100%;
-          padding: 0 10px;
-
-          span {
-            padding-left: 6px;
-          }
-
-          &:hover {
-            color: white;
-            background-color: navy;
-          }
-        }
-      }
-    }
-  }
-
-  div.icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    
-    img {
-      height: 28px;
-      margin: 0;
-      padding: 0 12px;
-      background: radial-gradient(circle, rgb(194, 182, 18) 0%, rgb(0, 0, 0) 70%);
-    }
-  }
-}
-  */
-
-.controller {
-  position: absolute;
-  background-color: black;
 }
 </style>

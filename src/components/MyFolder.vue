@@ -95,7 +95,7 @@ onMounted(async () => {
 const menu = ref([
   {
     id: 'file',
-    name: '파일',
+    name: 'File',
     submenu: [
       {
         id: 'a',
@@ -106,7 +106,7 @@ const menu = ref([
   },
   {
     id: 'show',
-    name: '보기',
+    name: 'View',
     submenu: [
       {
         id: 'list',
@@ -179,10 +179,7 @@ main {
       display: flex;
       flex-direction: column;
       color: var(--main-color);
-      font-family: 'Noto Sans KR';
-      font-size: 14px;
       gap: 5px;
-      font-weight: bold;
       width: 80px;
       padding: 5px;
       justify-content: start;

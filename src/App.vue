@@ -10,6 +10,8 @@ import PaintTool from './components/PaintTool.vue';
 import { useStore } from './store';
 import { highlightCode } from './assets/highlighter';
 import MyComputer from './components/MyComputer.vue';
+import { Octokit } from 'octokit';
+import { loadDir } from './utils';
 
 const store = useStore()
 
@@ -24,28 +26,28 @@ const desktopPrograms = ref([
   // },
   {
     id: 'myFolder',
-    name: '내 폴더',
+    name: 'My Folder',
     icon: 'folder.svg',
     component: MyFolder,
     index: 0
   },
   {
     id: 'user',
-    name: '시스템 유저',
+    name: 'Admin',
     icon: 'user.svg',
     component: UserInfo,
     index: 1
   },
   {
     id: 'internet',
-    name: '블로그',
+    name: 'Blog',
     icon: 'blog.svg',
     component: InternetExplorer,
     index: 2
   },
   {
     id: 'paint',
-    name: '그림판',
+    name: 'Painting',
     icon: 'brush.svg',
     component: PaintTool,
     index: 3
@@ -59,13 +61,15 @@ const desktopPrograms = ref([
   // }
 ])
 
-onMounted(() => {
+onMounted(async () => {
   // for (const [index, program] of desktopPrograms.value.entries()) {
   //   setTimeout(() => {
   //     store.open(program);
   //   }, 300 * index)  
   // }
   const sections = document.querySelector('section')
+  
+  // loadDir('')
 })
 </script>
 
@@ -126,9 +130,7 @@ main {
       display: flex;
       flex-direction: column;
       color: var(--main-color);
-      font-family: 'Galmuri9';
-      font-weight: bold;
-      width: 100px;
+      width: 110px;
       height: 90px;
       padding: 5px;
       justify-content: center;

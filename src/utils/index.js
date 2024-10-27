@@ -1,13 +1,11 @@
 import NotePad from '@/components/NotePad.vue';
 import dayjs from 'dayjs';
 
-function loadFile(name, extension, date) {
-  let id = '';
+function loadFile(name, extension, id) {
   let icon = '';
   let component = null;
 
   if (['md', 'txt'].includes(extension)) {
-    id = `notepad-${date}`;
     icon = 'file.svg';
     component = NotePad;
   }
