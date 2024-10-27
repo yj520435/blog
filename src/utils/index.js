@@ -16,7 +16,7 @@ function loadFile(name, extension, id) {
 export async function loadDir(path) {
   const result = [];
 
-  const response = await fetch('path');
+  const response = await fetch(path);
   const text = await response.text();
 
   const parser = new DOMParser();
