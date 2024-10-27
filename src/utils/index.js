@@ -17,8 +17,6 @@ export async function loadDir(path) {
   const result = [];
 
   const response = await fetch(path);
-  // const response = require('fs');
-  console.log(response);
   const text = await response.text();
 
   const parser = new DOMParser();
