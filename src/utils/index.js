@@ -1,54 +1,93 @@
+import MarkDown from '@/components/MarkDown.vue';
 import NotePad from '@/components/NotePad.vue';
 import dayjs from 'dayjs';
 
-function loadFile(name, extension, id) {
-  let icon = '';
-  let component = null;
+export async function loadFile(item) {
+  const apiKey = process.env.VUE_APP_API_KEY;
 
-  if (['md', 'txt'].includes(extension)) {
-    icon = 'file.svg';
-    component = NotePad;
-  }
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${item.id}?key=${apiKey}&alt=media`
+  );
 
-  return { id, name, icon, component };
+  const contents = await response.text();
+  return contents;
 }
 
-export async function loadDir(path) {
+const fileIconMap = new Map()
+  .set('text/markdown', 'file.svg')
+  .set('text/x-markdown', 'file.svg');
+
+const fileComponentMap = new Map()
+  .set('text/markdown', MarkDown)
+  .set('text/x-markdown', MarkDown);
+
+export async function loadDir(id) {
   const result = [];
 
-  const response = await fetch(path);
-  const text = await response.text();
+  const dirId = id ?? process.env.VUE_APP_DIR_ID;
+  const apiKey = process.env.VUE_APP_API_KEY;
 
-  const parser = new DOMParser();
-  const dom = parser.parseFromString(text, 'text/html');
+  const q = `'${dirId}'+in+parents`;
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=${q}&key=${apiKey}`
+  );
 
-  const files = dom.getElementById('files');
+  const items = (await response.json()).files;
 
-  for (const file of files.children) {
-    let object = {};
-    ['name', 'size', 'date'].forEach((v) => {
-      object[v] = file.getElementsByClassName(v)[0].innerHTML;
+  const folderMimeType = 'application/vnd.google-apps.folder';
+  const folders = items.filter((v) => v.mimeType === folderMimeType);
+  const files = items.filter((v) => v.mimeType !== folderMimeType);
+
+  for (const folder of folders) {
+    result.push({
+      id: folder.id,
+      name: folder.name,
+      icon: 'folder.svg',
+      component: null,
     });
-
-    if (object.name === '..') continue;
-
-    if (object.size === '') {
-      result.push({
-        id: object.name,
-        name: object.name,
-        icon: 'folder.svg',
-        component: null,
-      });
-    } else {
-      const name = object.name;
-      const extension = object.name.split('.')[1];
-      const date = object.date.includes('오전')
-        ? object.date.replace('오전', '').concat(' AM')
-        : object.date.replace('오후', '').concat(' PM');
-      const convertedDate = dayjs(date, 'YYYY. M. DD. h:mm:ss A', true).unix();
-      result.push(loadFile(name, extension, convertedDate));
-    }
   }
+
+  for (const file of files) {
+    result.push({
+      id: file.id,
+      name: file.name,
+      icon: fileIconMap.get(file.mimeType),
+      component: fileComponentMap.get(file.mimeType),
+    });
+  }
+
+  // const response = await fetch(path);
+  // const text = await response.text();
+
+  // const parser = new DOMParser();
+  // const dom = parser.parseFromString(text, 'text/html');
+
+  // const files = dom.getElementById('files');
+
+  // for (const file of files.children) {
+  //   let object = {};
+  //   ['name', 'size', 'date'].forEach((v) => {
+  //     object[v] = file.getElementsByClassName(v)[0].innerHTML;
+  //   });
+
+  //   if (object.name === '..') continue;
+
+  //   if (object.size === '') {
+  //     result.push({
+  //       id: object.name,
+  //       name: object.name,
+  //       icon: 'folder.svg',
+  //       component: null,
+  //     });
+  //   } else {
+  //     const name = object.name;
+  //     const extension = object.name.split('.')[1];
+  //     const date = object.date.includes('오전')
+  //       ? object.date.replace('오전', '').concat(' AM')
+  //       : object.date.replace('오후', '').concat(' PM');
+  //     const convertedDate = dayjs(date, 'YYYY. M. DD. h:mm:ss A', true).unix();
+  //     result.push(loadFile(name, extension, convertedDate));
+  //   }
 
   return result;
 }

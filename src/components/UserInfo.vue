@@ -1,7 +1,7 @@
 <script setup>
 import { ref, defineExpose } from 'vue';
 
-const selectedTabIndex = ref(1)
+const selectedTabIndex = ref(0)
 
 const tabs = ref([
   '사용자 정보',
@@ -27,12 +27,12 @@ const selectedFeatureItemId = ref('javascript')
 const features = ref([
   {
     id: 'FrontEnd',
-    name: '프론트엔드',
+    name: 'Front-End',
     items: ['javascript', 'typescript', 'nodejs', 'vue', 'nuxtjs', 'react', 'css']
   },
   {
     id: 'VersionManagement',
-    name: '버전관리',
+    name: 'Version Management',
     items: ['git']
   }
 ])
@@ -57,11 +57,26 @@ const features = ref([
         v-if="selectedTabIndex === 0"
         class="base"
       >
-        <div class="lt">
+        <ul>
+          <li class="name">KIM YUJIN</li>
+          <li>Web Developer</li>
+          <!-- <li>2018. 02. INU Computer Science</li>
+          <li>2018. 06. URP System</li>
+          <li>2019. 05. Swisslog Healthcare Korea</li>
+          <li>2022. 01. The CNP
+            <ul>
+              <li>광주첨단산단 통합관제 UI/Service</li>
+              <li>무인공간관제서비스 UI</li>
+              <li>동대구역사실증사업 UI/Service</li>
+              <li>AI 스마트시티 2.0 (구축형) UI</li>
+            </ul>
+          </li> -->
+        </ul>
+        <!-- <div class="lt">
           <img
             alt="profile"
             :src="require('@/assets/profile-6.png')"
-          >
+          > -->
           <!-- <img
             alt="avatar"
             class="avatar"
@@ -72,24 +87,10 @@ const features = ref([
             class="computer"
             :src="require('@/assets/windows-98-computer.png')"
           /> -->
-        </div>
+        <!-- </div>
         <div class="rt">
-          <ul>
-            <li>김유진 (1994. 05.)</li>
-            <li>프론트엔드 개발자</li>
-            <li>2018. 02. INU Computer Science</li>
-            <li>2018. 06. URP System</li>
-            <li>2019. 05. Swisslog Healthcare Korea</li>
-            <li>2022. 01. The CNP
-              <ul>
-                <li>광주첨단산단 통합관제 UI/Service</li>
-                <li>무인공간관제서비스 UI</li>
-                <li>동대구역사실증사업 UI/Service</li>
-                <li>AI 스마트시티 2.0 (구축형) UI</li>
-              </ul>
-            </li>
-          </ul>
-        </div>
+
+        </div> -->
       </section>
       <!-- 기술스택 -->
       <section
@@ -116,7 +117,6 @@ const features = ref([
               v-for="item of features.find(v => v.id === selectedFeatureId).items"
               :key="item"
               @click="selectedFeatureItemId = item"
-              :class="{ 'focused': selectedFeatureItemId === item }"
             >
               <img
                 :src="require(`@/assets/features/${item}.png`)"
@@ -133,50 +133,73 @@ const features = ref([
 <style scoped>
 main {
   height: 100%;
-  padding: 10px 0;
-
+  padding: 2px;
+  background-color: var(--main-color);
+  
   div.tabs {
-    width: calc(100% - 20px);
+    width: 100%;
     display: flex;
     margin: 0 auto;
 
     button {
       padding: 4px 16px;
-      background-color: var(--system-dark-color);
-      color: var(--system-light-color);
+      background-color: var(--background-color);
       font-family: 'Noto Sans KR';
       font-weight: 600;
       font-size: 14px;
       outline: none;
+      color: var(--main-color);
+      border-color: var(--background-color);
+
+      &:not(:first-child) {
+        border-left: none;
+      }
 
       &.selected {
         z-index: 3;
         border-bottom: none !important;
         padding-bottom: 6px;
-        background-color: var(--system-light-color);
-        color: var(--system-dark-color);
+        background-color: var(--main-color);
+        color: var(--background-color);
       }
     }
   }
 }
 
 .body {
-  width: calc(100% - 20px);
+  width: 100%;
   height: calc(100% - 30px);
   margin: 0 auto;
   position: relative;
   top: -2px;
   z-index: 2;
+  background-color: var(--main-color);
+  border: 2px solid black;
 
   .base {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
     height: 100%;
+
+    ul {
+      background-color: var(--background-color);
+      margin: 2px;
+      padding: 0;
+      height: calc(100% - 4px);
+      color: var(--main-color);
+      list-style: none;
+
+      li {
+        margin: 0;
+
+        &:nth-child(1) {
+          font-size: 40px;
+        }
+      }
+      
+    }
   }
 }
 
-.body .base .lt {
+/* .body .base .lt {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,7 +217,7 @@ main {
   background-color: #378181;
   padding: 10px 24px;
   z-index: 2;
-}
+} */
 
 .body .base .rt {
   padding: 27px 0;
@@ -228,51 +251,59 @@ main {
 .skills {
   display: grid;
   grid-template-columns: 160px 1fr;
-  padding: 20px;
+  padding: 2px;
   height: 100%;
-  gap: 10px;
-}
+  gap: 2px;
 
-.skills .lt {
-  background-color: white;
-  height: 100%;
-}
+  .lt *,
+  .rt * {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 
-.skills .lt ul li {
-  height: 50px;
-  display: flex;
-  align-items: center;
-  padding: 10px;
-}
+  .lt {
+    background-color: var(--background-color);
+    border-color: var(--background-color);
+    height: 100%;
 
-.skills .lt ul li.focused {
-  background-color: navy;
-  color: white;
-}
+    ul {
+      li {
+        height: 50px;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        color: var(--main-color);
 
-.skills .lt *,
-.skills .rt * {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+        &.focused {
+          background-color: var(--main-color);
+          color: var(--background-color);
+        }
+      }
+    }
+  }
 
-}
+  .rt {
+    border-color: var(--background-color);
+    border-right: none;
+    background-color: var(--background-color);
+    overflow-y: auto;
 
-.skills .rt {
-  background-color: white;
-  overflow-y: auto;
-}
+    ul {
+      li{
+        height: 50px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        color: var(--main-color);
 
-.skills .rt ul li {
-  height: 50px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-}
-
-.skills .rt ul li img {
-  height: 100%;
+        img {
+          height: 100%;
+        }
+      }
+    }
+  }
 }
 
 /* .body {

@@ -16,8 +16,10 @@ const folderIcons = [
 ]
 
 const windowObject = ref({
-  x: 150 + 20 * program.index,
-  y: 50 + 20 * program.index,
+  // x: 150 + 20 * program.index,
+  // y: 50 + 20 * program.index,
+  x: 150,
+  y: 50,
   width: 600,
   height: 450
 });
@@ -214,7 +216,11 @@ const windowRef = ref()
       @mousedown="movable = true;"
       @mouseup="movable = false"
     >
-      <img :src="require(`@/assets/icons/fill/${program.icon}`)" alt=""/>
+      <img
+        :src="require(`@/assets/icons/fill/${program.icon}`)"
+        :class="{ filter: !props.activated }"
+        alt=""
+      />
       <span>{{ program.name }}</span>
       <button
 
@@ -312,6 +318,7 @@ const windowRef = ref()
       <component
         ref="componentRef"
         :is="toRaw(program.component)"
+        :params="program.params"
       />
     </div>
     <div v-if="state" class="state">
@@ -374,13 +381,13 @@ const windowRef = ref()
   &.activated {
     .title {
       /* background: var(--system-dark-color); */
+      color: var(--background-color);
       background: var(--main-color);
     }
   }
   
   .title {
-    background: linear-gradient(90deg, grey 0%, lightgrey 100%);
-    color: black;
+    color: var(--main-color);
     display: grid;
     align-items: center;
     width: 100%;

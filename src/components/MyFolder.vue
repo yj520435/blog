@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref, defineProps, defineExpose, computed, watch } from 'vue';
 import { useStore } from '@/store';
-import { getFiles, loadDir } from '@/utils';
+import { getFiles, loadDir, loadFile } from '@/utils';
 
 const props = defineProps(['on']);
 
@@ -21,7 +21,7 @@ const iconStyle = computed(() => {
   return `margin: 10px ${marginLeftRight}px`;
 });
 
-const myFiles = ref([])
+const items = ref([])
 
 // async function getFiles(path) {
 //   const response = await fetch(path)
@@ -77,19 +77,19 @@ const myFiles = ref([])
 
 const store = useStore()
 
-async function open(file) {
-  if (file.component) {
-    store.open(file)
+async function open(item) {
+  if (item.component) {
+    const contents = await loadFile(item)
+    store.open({ ...item, params: contents })
   }
   else {
-    path.value += `/${file.name}`
-    myFiles.value = []
-    myFiles.value = await loadDir(path.value)
+    items.value = []
+    items.value = await loadDir(item.id)
   }
 }
 
 onMounted(async () => {
-  myFiles.value = await loadDir(path.value)
+  items.value = await loadDir()
 })
 
 const menu = ref([
@@ -143,23 +143,23 @@ defineExpose({
     <!-- 큰 아이콘 -->
     <section class="icon-lg">
       <div
-        v-for="file of myFiles"
-        :key="file.id"
+        v-for="item of items"
+        :key="item.id"
         :style="iconStyle"
-        :class="{
-          clicked: clickedFile === file.id
-        }"
-        :title="file.name"
+        :class="{ clicked: clickedFile === item.id }"
+        :title="item.name"
         class="icon"
-        @click="clickedFile = file.id"
-        @dblclick="open(file)"
+        @click="clickedFile = item.id"
+        @dblclick="open(item)"
       >
         <img
-          :src="require(`@/assets/icons/line/${file.icon}`)"
-          alt="file.title"
+          :src="require(`@/assets/icons/line/${item.icon}`)"
+          alt="item.title"
           class="filter"
         />
-        <span>{{ file.name }}</span>
+        <div>
+          <span>{{ item.name }}</span>
+        </div>
       </div>
     </section>
   </main>
@@ -170,6 +170,7 @@ defineExpose({
 main {
   height: 100%;
   background-color: black;
+  overflow: auto;
 
   section.icon-lg {
     display: flex;
@@ -177,45 +178,53 @@ main {
 
     .icon {
       display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
+      flex-direction: row;
       color: var(--main-color);
       gap: 5px;
-      width: 80px;
+      width: 90px;
+      height: 70px;
       padding: 5px;
-      justify-content: start;
-      align-items: center;
-      text-align: center;
       cursor: pointer;
       border: 1px solid transparent;
 
+      div {
+        margin: 0 auto;
+        width: 70px;
+        height: 16px;
+        text-align: center;
+      }
+
       span {
         display: inline-block;
-        border: 1px solid transparent;
-        padding-bottom: 2px;
-        max-width: 80px;
-        /* text-wrap: wrap; */
+        position: relative;
+        max-width: 70px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        padding: 1px;
+        /* position: absolute;
+        max-width: 70px;
+        padding: 0 3px 2px 3px;
+ */
       }
 
       img {
+        margin: 0 auto;
         width: 40px;
         height: 40px;
-        /* filter: invert(22%) sepia(95%) saturate(2040%) hue-rotate(95deg) brightness(100%) contrast(108%); */
       }
 
       &.clicked {
-        span {
-          background-color: black;
-          padding: 0 3px 2px 3px;
-          /* border: 1px dotted lightgrey; */
-          /* border-radius: 9px; */
-          color: white;
-          overflow: visible;
-          text-overflow: unset;
-          white-space: unset;
-          position: relative;
+        div {
+          span {
+            background-color: var(--main-color);
+            color: var(--background-color);
+            height: auto;
+            text-wrap: unset;
+            overflow-wrap: anywhere;
+            z-index: 2;
+          }
         }
       }
     }
