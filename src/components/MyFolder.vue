@@ -9,6 +9,7 @@ const mainRef = ref();
 
 const path = ref('archive')
 const clickedFile = ref()
+const apiCallSuccess = ref(false)
 
 const iconStyle = computed(() => {
   let marginLeftRight = 0;
@@ -89,7 +90,15 @@ async function open(item) {
 }
 
 onMounted(async () => {
-  items.value = await loadDir()
+  const startTime = new Date().getTime()
+  loadDir()
+    .then((v) => {
+      apiCallSuccess.value = true
+    })
+  // items.value = await loadDir()
+  // loading.value = 100
+  const endTime = new Date().getTime()
+  console.log('DIFF', endTime - startTime)
 })
 
 const menu = ref([
@@ -162,11 +171,18 @@ defineExpose({
         </div>
       </div>
     </section>
+    <section class="loading">
+      <h3>Loading</h3>
+      <div>
+        <div
+         :class="{ progress: apiCallSuccess }"
+        ></div>
+      </div>
+    </section>
   </main>
 </template>
 
 <style scoped>
-
 main {
   height: 100%;
   background-color: black;
@@ -228,6 +244,54 @@ main {
         }
       }
     }
+  }
+
+  section.loading {
+    width: calc(100% - 12px);
+    height: calc(100% - 133px);
+    background-color: var(--main-color);
+    position: absolute;
+    top: 100px;
+    left: 6px;
+    opacity: 0.7;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+
+    h3 {
+      font-size: 24px;
+      font-weight: normal;
+      margin: 0;
+    }
+
+    > div {
+      border: 3px solid black;
+      width: 140px;
+      height: 30px;
+      display: flex;
+      padding: 3px;
+
+      div {
+        height: 18px;
+        background-color: black;
+      }
+
+      .progress {
+        animation: expand 0.5s forwards;
+      }
+    }
+  }
+}
+
+@keyframes expand {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
   }
 }
 
