@@ -1,6 +1,38 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
+export const usePopup = defineStore('popup', () => {
+  const state = ref({
+    type: 'alert',
+    icon: 'error.svg',
+    message: '',
+    show: false,
+  });
+
+  function on(params) {
+    ['type', 'icon', 'message'].forEach((v) => {
+      if (params[v]) state.value[v] = params[v];
+    });
+    state.value.show = true;
+  }
+
+  function off() {
+    state.value = {
+      type: 'alert',
+      icon: 'error.svg',
+      message: '',
+      show: false,
+    };
+    console.log('# ', state.value);
+  }
+
+  return {
+    state,
+    on,
+    off,
+  };
+});
+
 export const useStore = defineStore('store', () => {
   const programs = ref([]);
 
