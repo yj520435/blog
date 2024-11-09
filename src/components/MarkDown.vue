@@ -22,10 +22,11 @@ main {
   width: 100%;
   height: 100%;
   overflow-y: auto;
+  background-color: #ffffffaa
 }
 
 article {
-  color: var(--main-color);
+  color: var(--text-color);
   padding: 20px;
 }
 </style>

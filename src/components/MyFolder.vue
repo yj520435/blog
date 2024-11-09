@@ -1,7 +1,9 @@
 <script setup>
 import { onMounted, ref, defineProps, defineExpose, computed, watch } from 'vue';
-import { useStore } from '@/store';
+import { usePopup, useStore } from '@/store';
 import { getFiles, loadDir, loadFile } from '@/utils';
+import Popup from './Popup.vue';
+import { Base64, decode, toBase64 } from 'js-base64';
 
 const props = defineProps(['on']);
 
@@ -9,6 +11,9 @@ const mainRef = ref();
 
 const path = ref('archive')
 const clickedFile = ref()
+
+const loading = ref(true)
+const progress = ref(0)
 const apiCallSuccess = ref(false)
 
 const iconStyle = computed(() => {
@@ -77,28 +82,35 @@ const items = ref([])
 
 
 const store = useStore()
+const popup = usePopup()
 
 async function open(item) {
-  if (item.component) {
-    const contents = await loadFile(item)
+  if (item && item.component) {
+    const file = await loadFile(item)
+    const contents = decode(file.data.content)
     store.open({ ...item, params: contents })
   }
   else {
+    loading.value = true
+    progress.value = 0
+    const onLoading = setInterval(() => {
+      progress.value = (progress.value < 10) ? progress.value + 1 : 10
+    }, 50)
     items.value = []
-    items.value = await loadDir(item.id)
+    try {
+      items.value = await loadDir(!item ? 'src/archive' : item.id)
+    } catch (error) {
+      console.error(error)
+      popup.on({ message: 'Cannot Access Directory Now' })
+    } finally {
+      loading.value = false
+      clearInterval(onLoading)
+    }
   }
 }
 
 onMounted(async () => {
-  const startTime = new Date().getTime()
-  loadDir()
-    .then((v) => {
-      apiCallSuccess.value = true
-    })
-  // items.value = await loadDir()
-  // loading.value = 100
-  const endTime = new Date().getTime()
-  console.log('DIFF', endTime - startTime)
+  open()
 })
 
 const menu = ref([
@@ -109,6 +121,16 @@ const menu = ref([
       {
         id: 'a',
         name: '리스트A',
+        icon: 'fa-user',
+      },
+      {
+        id: 'B',
+        name: '리스트B',
+        icon: 'fa-user',
+      },
+      {
+        id: 'C',
+        name: '리스트C',
         icon: 'fa-user',
       },
     ],
@@ -171,23 +193,23 @@ defineExpose({
         </div>
       </div>
     </section>
-    <section class="loading">
+    <section class="loading" v-if="loading">
       <h3>Loading</h3>
       <div>
-        <div
-         :class="{ progress: apiCallSuccess }"
-        ></div>
+        <div v-for="i of progress" :key="i"></div>
       </div>
     </section>
+    <!-- <Popup v-if="!apiCallSuccess"/> -->
   </main>
 </template>
 
 <style scoped>
 main {
   height: 100%;
-  background-color: black;
   overflow: auto;
-
+  padding: 2px;
+  background-color: #ffffffaa;
+  
   section.icon-lg {
     display: flex;
     flex-wrap: wrap;
@@ -196,7 +218,7 @@ main {
       display: flex;
       flex-wrap: wrap;
       flex-direction: row;
-      color: var(--main-color);
+      color: var(--line-color);
       gap: 5px;
       width: 90px;
       height: 70px;
@@ -234,8 +256,9 @@ main {
       &.clicked {
         div {
           span {
-            background-color: var(--main-color);
-            color: var(--background-color);
+            background-color: var(--text-color);
+            color: #ffffff;
+            padding: 0 3px 2px 3px;
             height: auto;
             text-wrap: unset;
             overflow-wrap: anywhere;
@@ -247,53 +270,70 @@ main {
   }
 
   section.loading {
-    width: calc(100% - 12px);
-    height: calc(100% - 133px);
-    background-color: var(--main-color);
+    width: calc(100% - 8px);
+    height: calc(100% - 129px);
     position: absolute;
-    top: 100px;
-    left: 6px;
-    opacity: 0.7;
+    top: 98px;
+    left: 4px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    background-color: var(--shadow-color);
     gap: 10px;
 
     h3 {
+      color: var(--text-color);
       font-size: 24px;
-      font-weight: normal;
+      font-weight: bold;
       margin: 0;
     }
 
     > div {
-      border: 3px solid black;
+      border: 3px solid var(--text-color);
       width: 140px;
       height: 30px;
       display: flex;
       padding: 3px;
+      gap: 2px;
 
       div {
+        width: 11px;
         height: 18px;
-        background-color: black;
-      }
+        background-color: var(--text-color);
 
-      .progress {
-        animation: expand 0.5s forwards;
+        &.p-70 {
+          animation: progress-70 1s forwards;
+        }
+        
+        &.p-100 {
+          animation: progress-100 0.5s forwards;
+        }
       }
     }
   }
 }
 
-@keyframes expand {
+@keyframes progress-70 {
   0% {
     width: 0%;
+  }
+
+  100% {
+    width: 80%;
+  }
+}
+
+@keyframes progress-100 {
+  0% {
+    width: 80%;
   }
 
   100% {
     width: 100%;
   }
 }
+
 
 .bubble {
   position: absolute;

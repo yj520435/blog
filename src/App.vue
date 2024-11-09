@@ -7,13 +7,16 @@ import NotePad from './components/NotePad.vue'
 import UserInfo from './components/UserInfo.vue';
 import InternetExplorer from './components/InternetExplorer.vue'
 import PaintTool from './components/PaintTool.vue';
-import { useStore } from './store';
+import { usePopup, useStore } from './store';
 import { highlightCode } from './assets/highlighter';
 import MyComputer from './components/MyComputer.vue';
 import { Octokit } from 'octokit';
 import { loadDir } from './utils';
+import Popup from './components/Popup.vue';
+import axios from 'axios';
 
 const store = useStore()
+const popup = usePopup()
 
 const focused = ref('')
 
@@ -29,7 +32,7 @@ const desktopPrograms = ref([
     name: 'My Folder',
     icon: 'folder.svg',
     component: MyFolder,
-    index: 0
+    feature: { x: 0, y: 0, width: 600, height: 450 }
   },
   {
     id: 'user',
@@ -40,10 +43,16 @@ const desktopPrograms = ref([
   },
   {
     id: 'internet',
-    name: 'Blog',
+    name: 'YJ520435',
     icon: 'blog.svg',
     component: InternetExplorer,
     index: 2
+  },
+  {
+    id: 'notepad',
+    name: 'NotePad',
+    icon: 'paper.svg',
+    component: NotePad
   },
   {
     id: 'paint',
@@ -61,20 +70,42 @@ const desktopPrograms = ref([
   // }
 ])
 
+const mainRef = ref()
+
 onMounted(async () => {
   // for (const [index, program] of desktopPrograms.value.entries()) {
   //   setTimeout(() => {
   //     store.open(program);
   //   }, 300 * index)  
   // }
-  const sections = document.querySelector('section')
-  
-  // loadDir('')
+
+  console.log('APP START')
+  mainRef.value.addEventListener('mousemove', (e) => {
+    // console.log(e.target)
+
 })
+
+// const result = await axios({
+//   url: 'https://api.github.com/repos/yj520435/yj520435.github.io/contents/README.md',
+//   method: 'get'
+// })
+// console.log(result)
+
+function onMouseDown(event, program) {
+  console.log(event, program)
+}
+
+
+
+})
+
+function test() {
+  console.log(1)
+}
 </script>
 
 <template>
-  <main>
+  <main ref="mainRef">
     <section id="background">
       <div
         v-for="program of desktopPrograms"
@@ -106,9 +137,14 @@ onMounted(async () => {
       :style="`z-index: ${store.sortedPrograms.findIndex(
         v => v === program.id
       )}`"
+      @mousedown="(event) => onMouseDown(event, program)"
+      @mouseover="test"
+    />
+    <!--
       @mousedown="store.sort(program.id);"
       @close="store.close"
-    />
+    -->
+    <Popup />
   </main>
 </template>
 
@@ -129,7 +165,7 @@ main {
       margin: 10px 0px;
       display: flex;
       flex-direction: column;
-      color: var(--main-color);
+      color: var(--text-color);
       width: 110px;
       height: 90px;
       padding: 5px;
@@ -138,7 +174,7 @@ main {
       text-align: center;
 
       span {
-        padding: 3px 5px;
+        padding: 2px 5px;
         cursor: inherit;
       }
       
@@ -148,7 +184,7 @@ main {
       }
 
       &:hover {
-        cursor: var(--point-cursor) !important;
+        cursor: var(--pointer-cursor) !important;
       }
     }
   }

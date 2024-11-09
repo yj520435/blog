@@ -11,8 +11,11 @@
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/vue-fontawesome": "^3.0.8",
+    "axios": "^1.7.7",
     "core-js": "^3.8.3",
     "dayjs": "^1.11.11",
+    "google-auth-library": "^9.14.2",
+    "js-base64": "^3.7.7",
     "octokit": "^4.0.2",
     "pinia": "^2.2.2",
     "showdown": "^2.1.0",
@@ -40,7 +43,15 @@
       "parser": "@babel/eslint-parser"
     },
     "rules": {
-      "no-unused-vars": "off"
+      "no-unused-vars": "off",
+      "vue/multi-word-component-names": [
+        "error",
+        {
+          "ignores": [
+            "Popup"
+          ]
+        }
+      ]
     }
   },
   "browserslist": [
