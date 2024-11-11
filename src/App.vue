@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import TaskBar from '@/components/TaskBar.vue'
 import MyFolder from './components/MyFolder.vue';
 import WindowFrame from './components/WindowFrame.vue';
@@ -7,19 +7,16 @@ import NotePad from './components/NotePad.vue'
 import UserInfo from './components/UserInfo.vue';
 import InternetExplorer from './components/InternetExplorer.vue'
 import PaintTool from './components/PaintTool.vue';
-import { usePopup, useStore } from './store';
-import { highlightCode } from './assets/highlighter';
-import MyComputer from './components/MyComputer.vue';
-import { Octokit } from 'octokit';
-import { loadDir } from './utils';
+import { useProgram } from './store';
 import Popup from './components/Popup.vue';
-import axios from 'axios';
 
-const store = useStore()
-const popup = usePopup()
+const MIN_WIDTH = 450
+const MIN_HEIGHT = 450
+const BASE_FEATURE = { x: 50, y: 50, width: 600, height: 450 }
+
+const store = useProgram()
 
 const focused = ref('')
-
 const desktopPrograms = ref([
   // {
   //   id: 'myPc',
@@ -32,7 +29,7 @@ const desktopPrograms = ref([
     name: 'My Folder',
     icon: 'folder.svg',
     component: MyFolder,
-    feature: { x: 0, y: 0, width: 600, height: 450 }
+    feature: BASE_FEATURE
   },
   {
     id: 'user',
@@ -52,7 +49,8 @@ const desktopPrograms = ref([
     id: 'notepad',
     name: 'NotePad',
     icon: 'paper.svg',
-    component: NotePad
+    component: NotePad,
+    feature: BASE_FEATURE
   },
   {
     id: 'paint',
@@ -70,7 +68,112 @@ const desktopPrograms = ref([
   // }
 ])
 
-const mainRef = ref()
+const target = ref()
+const backup = ref()
+
+const move = ref(false)
+const resize = ref({ n: false, s: false, w: false, e: false })
+
+const isMouseDown = ref(false)
+
+function initResize() {
+  resize.value = { n: false, s: false, e: false, w: false }
+}
+
+function onMouseDown(event) {
+  if (target.value) {
+    isMouseDown.value = true
+    backup.value = {
+      mouse: { x: event.x, y: event.y },
+      target: { ...target.value.feature }
+    }
+  }
+}
+
+function onMouseMove(event) {
+  if (isMouseDown.value) {
+    const diff = {
+      x: event.x - backup.value.mouse.x,
+      y: event.y - backup.value.mouse.y
+    }
+
+    if (move.value) {
+      target.value.feature.x = backup.value.target.x + diff.x;
+      target.value.feature.y = backup.value.target.y + diff.y;
+    }
+
+    if (resize.value.n) {
+      target.value.feature.y = backup.value.target.y + diff.y;
+      target.value.feature.height = backup.value.target.height - diff.y;
+    }
+
+    if (resize.value.s) {
+      target.value.feature.height = backup.value.target.height + diff.y;
+    }
+
+    if (resize.value.e) {
+      target.value.feature.width = backup.value.target.width + diff.x;
+    }
+
+    if (resize.value.w) {
+      target.value.feature.x = backup.value.target.x + diff.x;
+      target.value.feature.width = backup.value.target.width - diff.x;
+    }
+    
+  }
+  else {
+    if (target.value) {
+      const diff = {
+        top: event.y - target.value.feature.y,
+        left: event.x - target.value.feature.x,
+        bottom: event.y - (target.value.feature.y + target.value.feature.height),
+        right: event.x - (target.value.feature.x + target.value.feature.width)
+      }
+
+      resize.value = {
+        n: diff.top < 4,
+        s: diff.bottom > -10 && diff.bottom < 0,
+        e: diff.right > -13 && diff.right < 0,
+        w: diff.left < 4
+      }
+    }
+    else {
+      initResize()
+    }
+  }
+}
+
+function onMouseUp() {
+  isMouseDown.value = false
+  initResize()
+
+  if (target.value) {
+    if (target.value.feature.width < MIN_WIDTH)
+      target.value.feature.width = MIN_WIDTH
+
+    if (target.value.feature.height < MIN_HEIGHT)
+      target.value.feature.height = MIN_HEIGHT
+  }
+}
+
+const cursorStyle = computed(() => {
+  if (resize.value.s || resize.value.n)
+    return 'vertical'
+  else if (resize.value.e || resize.value.w)
+    return 'horizontal'
+  else
+    return 'default'
+})
+
+function onWindowMove(params) {
+  if (!isMouseDown.value)
+    move.value = params
+}
+
+function onWindowCtrl(p, program) {
+  if (!isMouseDown.value)
+    target.value = p ? program : null
+}
 
 onMounted(async () => {
   // for (const [index, program] of desktopPrograms.value.entries()) {
@@ -78,35 +181,17 @@ onMounted(async () => {
   //     store.open(program);
   //   }, 300 * index)  
   // }
-
-  console.log('APP START')
-  mainRef.value.addEventListener('mousemove', (e) => {
-    // console.log(e.target)
-
 })
-
-// const result = await axios({
-//   url: 'https://api.github.com/repos/yj520435/yj520435.github.io/contents/README.md',
-//   method: 'get'
-// })
-// console.log(result)
-
-function onMouseDown(event, program) {
-  console.log(event, program)
-}
-
-
-
-})
-
-function test() {
-  console.log(1)
-}
 </script>
 
 <template>
-  <main ref="mainRef">
-    <section id="background">
+  <main
+    @mousemove="onMouseMove"
+    @mousedown="onMouseDown"
+    @mouseup="onMouseUp"
+    :class="cursorStyle"
+  >
+    <section class="background">
       <div
         v-for="program of desktopPrograms"
         :key="program.id"
@@ -136,28 +221,24 @@ function test() {
       :activated="store.activatedProgram === program.id"
       :style="`z-index: ${store.sortedPrograms.findIndex(
         v => v === program.id
-      )}`"
-      @mousedown="(event) => onMouseDown(event, program)"
-      @mouseover="test"
+      )};
+      `"
+      @move="(p) => onWindowMove(p)"
+      @ctrl="(p) => onWindowCtrl(p, program)"
     />
-    <!--
-      @mousedown="store.sort(program.id);"
-      @close="store.close"
-    -->
     <Popup />
   </main>
 </template>
 
 <style scoped>
 @import 'assets/style.css';
-@import 'assets/highligher.css';
 
 main {
   display: grid;
   grid-template-rows: 1fr 44px;
   height: 100vh;
 
-  #background {
+  .background {
     height: 100%;
     padding: 10px;
 
