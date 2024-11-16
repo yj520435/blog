@@ -20,7 +20,7 @@ const post = ref(converter.makeHtml(props.params))
 <style scoped>
 main {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 2px);
   overflow-y: auto;
   background-color: #ffffffaa
 }

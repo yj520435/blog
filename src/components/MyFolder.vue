@@ -1,20 +1,16 @@
 <script setup>
-import { onMounted, ref, defineProps, defineExpose, computed, watch } from 'vue';
-import { usePopup, useStore } from '@/store';
-import { getFiles, loadDir, loadFile } from '@/utils';
-import Popup from './Popup.vue';
-import { Base64, decode, toBase64 } from 'js-base64';
+import { onMounted, ref, defineProps, defineExpose, computed, watch, defineEmits } from 'vue';
+import { useProgram, usePopup, useDrive } from '@/store';
+import { loadDir, loadDirFromGDrive, loadFile } from '@/utils';
+import { decode } from 'js-base64';
 
 const props = defineProps(['on']);
 
+const program = useProgram()
+const drive = useDrive()
+const popup = usePopup()
+
 const mainRef = ref();
-
-const path = ref('archive')
-const clickedFile = ref()
-
-const loading = ref(true)
-const progress = ref(0)
-const apiCallSuccess = ref(false)
 
 const iconStyle = computed(() => {
   let marginLeftRight = 0;
@@ -27,91 +23,40 @@ const iconStyle = computed(() => {
   return `margin: 10px ${marginLeftRight}px`;
 });
 
+
 const items = ref([])
+const path = ref('archive')
+const clickedFile = ref()
 
-// async function getFiles(path) {
-//   const response = await fetch(path)
-//   const text = await response.text()
+const loading = ref(true)
+const progress = ref(0)
 
-//   const parser = new DOMParser()
-//   const dom = parser.parseFromString(text, 'text/html')
-
-//   console.log(dom)
-//   const files = dom.getElementById('files')
-  
-
-//   for (const file of files.children) {
-//     let object = {};
-//     ['name', 'size', 'date'].forEach(v => {
-//       object[v] = file.getElementsByClassName(v)[0].innerHTML
-//     })
-
-//     if (object.name === '..')
-//       continue
-
-//     // 폴더
-//     if (object.size === '') {
-//       myFiles.value.push((new Folder(object.name).self))
-//     }
-//     else {
-//       const name = object.name.split('.')[0]
-//       const extension = object.name.split('.')[1]
-      
-//       const date = object.date.includes('오전')
-//         ? object.date.replace('오전', '').concat(' AM')
-//         : object.date.replace('오후', '').concat(' PM')
-//       const convertedDate = dayjs(date, 'YYYY. M. DD. h:mm:ss A', true).unix()
-//       myFiles.value.push(getFile(name, extension, convertedDate))
-      
-      
-//     }
-
-//     // const name = file.getElementsByClassName('name')[0].innerHTML.split('.')
-//     // const date = file.getElementsByClassName('date')[0].innerHTML
-//     // if (array[0] !== '') {
-//     //   const convertedDate = date.includes('오전')
-//     //     ? date.replace('오전', '').concat(' AM')
-//     //     : date.replace('오후', '').concat(' PM')
-//     //   const program = new Program(array[0], array[1], dayjs(convertedDate, 'YYYY. M. DD. h:mm:ss A', true).unix())
-//     //   myFiles.value.push(program.self)
-//     // }
-//   }
-//   console.log('>> myFiles', myFiles.value)
-// }
-
-
-
-const store = useStore()
-const popup = usePopup()
-
-async function open(item) {
+async function openFile(item) {
   if (item && item.component) {
+    program.open(item)
     const file = await loadFile(item)
-    const contents = decode(file.data.content)
-    store.open({ ...item, params: contents })
-  }
-  else {
-    loading.value = true
-    progress.value = 0
-    const onLoading = setInterval(() => {
-      progress.value = (progress.value < 10) ? progress.value + 1 : 10
-    }, 50)
-    items.value = []
-    try {
-      items.value = await loadDir(!item ? 'src/archive' : item.id)
-    } catch (error) {
-      console.error(error)
-      popup.on({ message: 'Cannot Access Directory Now' })
-    } finally {
-      loading.value = false
-      clearInterval(onLoading)
-    }
+    // const contents = decode(file)
   }
 }
 
-onMounted(async () => {
-  open()
-})
+async function openDir(item) {
+  items.value = []
+
+  
+  // if (_items == undefined) {
+  //   try {
+  //     items.value = await loadDir(item);
+  //   } catch (error) {
+  //     // 에러
+  //   } finally {
+  //     program.afterExecute('myFolder')
+  //   }
+  // }
+  // else {
+  //   items.value = _items
+  //   program.afterExecute('myFolder')
+  // }
+}
 
 const menu = ref([
   {
@@ -164,6 +109,15 @@ defineExpose({
   state: true,
   path: path.value
 })
+
+onMounted(async () => {
+  program.setOptions('myFolder', {
+    ready: false,
+    message: 'Reading Archive...'
+  })
+  items.value = await loadDir()
+  program.setOptions('myFolder', { ready: true })
+})
 </script>
 
 <template>
@@ -171,7 +125,7 @@ defineExpose({
     ref="mainRef"
     class="outline scroll"
   >
-    <!-- 큰 아이콘 -->
+    <!-- BIG ICON -->
     <section class="icon-lg">
       <div
         v-for="item of items"
@@ -181,7 +135,7 @@ defineExpose({
         :title="item.name"
         class="icon"
         @click="clickedFile = item.id"
-        @dblclick="open(item)"
+        @dblclick="!item.component ? openDir(item) : openFile(item)"
       >
         <img
           :src="require(`@/assets/icons/line/${item.icon}`)"
@@ -194,12 +148,8 @@ defineExpose({
       </div>
     </section>
     <section class="loading" v-if="loading">
-      <h3>Loading</h3>
-      <div>
-        <div v-for="i of progress" :key="i"></div>
-      </div>
+
     </section>
-    <!-- <Popup v-if="!apiCallSuccess"/> -->
   </main>
 </template>
 
@@ -218,7 +168,7 @@ main {
       display: flex;
       flex-wrap: wrap;
       flex-direction: row;
-      color: var(--line-color);
+      color: var(--text-color);
       gap: 5px;
       width: 90px;
       height: 70px;
@@ -241,10 +191,6 @@ main {
         overflow: hidden;
         text-overflow: ellipsis;
         padding: 1px;
-        /* position: absolute;
-        max-width: 70px;
-        padding: 0 3px 2px 3px;
- */
       }
 
       img {
@@ -267,84 +213,6 @@ main {
         }
       }
     }
-  }
-
-  section.loading {
-    width: calc(100% - 8px);
-    height: calc(100% - 129px);
-    position: absolute;
-    top: 98px;
-    left: 4px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--shadow-color);
-    gap: 10px;
-
-    h3 {
-      color: var(--text-color);
-      font-size: 24px;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    > div {
-      border: 3px solid var(--text-color);
-      width: 140px;
-      height: 30px;
-      display: flex;
-      padding: 3px;
-      gap: 2px;
-
-      div {
-        width: 11px;
-        height: 18px;
-        background-color: var(--text-color);
-
-        &.p-70 {
-          animation: progress-70 1s forwards;
-        }
-        
-        &.p-100 {
-          animation: progress-100 0.5s forwards;
-        }
-      }
-    }
-  }
-}
-
-@keyframes progress-70 {
-  0% {
-    width: 0%;
-  }
-
-  100% {
-    width: 80%;
-  }
-}
-
-@keyframes progress-100 {
-  0% {
-    width: 80%;
-  }
-
-  100% {
-    width: 100%;
-  }
-}
-
-
-.bubble {
-  position: absolute;
-  background-color: var(--system-light-color);
-  z-index: 11;
-  width: 160px;
-
-  ul {
-    margin: 6px 0;
-    padding: 0 6px;
-    list-style: none;
   }
 }
 </style>
