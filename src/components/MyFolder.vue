@@ -6,11 +6,62 @@ import { decode } from 'js-base64';
 
 const props = defineProps(['on']);
 
+const PID = 'myFolder'
+
 const program = useProgram()
 const drive = useDrive()
 const popup = usePopup()
 
 const mainRef = ref();
+
+const options = ref({
+  menu: [
+    {
+      id: 'file',
+      name: 'File',
+      submenu: [
+        {
+          id: 'a',
+          name: '리스트A',
+          icon: 'fa-user',
+        },
+        {
+          id: 'B',
+          name: '리스트B',
+          icon: 'fa-user',
+        },
+        {
+          id: 'C',
+          name: '리스트C',
+          icon: 'fa-user',
+        },
+      ],
+    },
+    {
+      id: 'show',
+      name: 'View',
+      submenu: [
+        {
+          id: 'list',
+          name: '리스트',
+          icon: 'list.svg',
+        },
+        {
+          id: 'icon_big',
+          name: '큰 아이콘',
+          icon: 'layout-grid-large.svg',
+        },
+        {
+          id: 'icon_small',
+          name: '작은 아이콘',
+          icon: 'layout-grid-small.svg',
+        },
+      ],
+    },
+  ],
+  state: true,
+  path: []
+})
 
 const iconStyle = computed(() => {
   let marginLeftRight = 0;
@@ -25,7 +76,9 @@ const iconStyle = computed(() => {
 
 
 const items = ref([])
-const path = ref('archive')
+const footprints = ref([])
+const path = ref('/')
+
 const clickedFile = ref()
 
 const loading = ref(true)
@@ -41,8 +94,10 @@ async function openFile(item) {
 
 async function openDir(item) {
   items.value = []
+  items.value = item.items
+  footprints.value.push(items.value)
+  options.value.path.push(item.name)
 
-  
   // if (_items == undefined) {
   //   try {
   //     items.value = await loadDir(item);
@@ -58,65 +113,31 @@ async function openDir(item) {
   // }
 }
 
-const menu = ref([
-  {
-    id: 'file',
-    name: 'File',
-    submenu: [
-      {
-        id: 'a',
-        name: '리스트A',
-        icon: 'fa-user',
-      },
-      {
-        id: 'B',
-        name: '리스트B',
-        icon: 'fa-user',
-      },
-      {
-        id: 'C',
-        name: '리스트C',
-        icon: 'fa-user',
-      },
-    ],
-  },
-  {
-    id: 'show',
-    name: 'View',
-    submenu: [
-      {
-        id: 'list',
-        name: '리스트',
-        icon: 'list.svg',
-      },
-      {
-        id: 'icon_big',
-        name: '큰 아이콘',
-        icon: 'layout-grid-large.svg',
-      },
-      {
-        id: 'icon_small',
-        name: '작은 아이콘',
-        icon: 'layout-grid-small.svg',
-      },
-    ],
-  },
-]);
+const menu = ref();
 
 defineExpose({
-  menu,
-  tools: true,
-  state: true,
-  path: path.value
+  options: options.value,
+  goRoot: () => {
+    items.value = footprints.value[0]
+    options.value.path = []
+  },
+  goBack: () => {
+    footprints.value.pop()
+    options.value.path.pop()
+    items.value = footprints.value[footprints.value.length - 1]
+  }
 })
 
 onMounted(async () => {
-  program.setOptions('myFolder', {
-    ready: false,
-    message: 'Reading Archive...'
-  })
-  items.value = await loadDir()
-  program.setOptions('myFolder', { ready: true })
+  program.ready('myFolder', async () => {
+    items.value = await loadDir()
+    footprints.value.push(items.value)
+  }, { message: 'Loading Archive' })
+  // program.ready('myFolder', async () => {
+  //   items.value = await loadDir()
+  //   footprints.value.push(items.value)
+  //   console.log('> items', items.value)
+  // }, { message: 'Loading Archive' })
 })
 </script>
 
@@ -135,20 +156,17 @@ onMounted(async () => {
         :title="item.name"
         class="icon"
         @click="clickedFile = item.id"
-        @dblclick="!item.component ? openDir(item) : openFile(item)"
-      >
+        
+      ><!-- @dblclick="!item.component ? openDir(item) : openFile(item)" -->
         <img
-          :src="require(`@/assets/icons/line/${item.icon}`)"
-          alt="item.title"
+          :src="require(`@/assets/icons/line/${item.type === 'dir' ? 'folder.svg' : 'file.svg'}`)"
+          alt="item.name"
           class="filter"
         />
         <div>
           <span>{{ item.name }}</span>
         </div>
       </div>
-    </section>
-    <section class="loading" v-if="loading">
-
     </section>
   </main>
 </template>
@@ -158,7 +176,7 @@ main {
   height: 100%;
   overflow: auto;
   padding: 2px;
-  background-color: #ffffffaa;
+  background-color: var(--shadow-color);
   
   section.icon-lg {
     display: flex;

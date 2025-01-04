@@ -1,273 +1,255 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import TaskBar from '@/components/TaskBar.vue'
-import MyFolder from './components/MyFolder.vue';
-import WindowFrame from './components/WindowFrame.vue';
-import NotePad from './components/NotePad.vue'
-import UserInfo from './components/UserInfo.vue';
-import InternetExplorer from './components/InternetExplorer.vue'
-import PaintTool from './components/PaintTool.vue';
-import { useProgram } from './store';
+import { onMounted, onUnmounted, ref, toRaw, watch } from 'vue';
+import { initDir, loadFile, resetDir } from './utils';
+import EditorPage from './components/EditorPage.vue';
 import Popup from './components/Popup.vue';
+import { usePopup } from './store';
+import HistoryPage from './components/HistoryPage.vue';
+import ArchivePage from './components/ArchivePage.vue';
+import dayjs from 'dayjs';
+import { Converter } from 'showdown';
+import Loading from './components/Loading.vue';
+import GalleryPage from './components/GalleryPage.vue';
+import ProfilePage from './components/ProfilePage.vue';
 
-const MIN_WIDTH = 450
-const MIN_HEIGHT = 450
-const BASE_FEATURE = { x: 50, y: 50, width: 600, height: 450 }
+const left = ref()
+const right = ref()
 
-const store = useProgram()
+const loading = ref(false)
+const popup = usePopup()
 
-const focused = ref('')
-const desktopPrograms = ref([
-  // {
-  //   id: 'myPc',
-  //   name: '내 컴퓨터',
-  //   icon: 'monitor.svg',
-  //   component: MyComputer,
-  // },
-  {
-    id: 'myFolder',
-    name: 'My Folder',
-    icon: 'folder.svg',
-    component: MyFolder,
-    feature: BASE_FEATURE
-  },
-  {
-    id: 'user',
-    name: 'Admin',
-    icon: 'user.svg',
-    component: UserInfo,
-    index: 1
-  },
-  {
-    id: 'internet',
-    name: 'YJ520435',
-    icon: 'blog.svg',
-    component: InternetExplorer,
-    index: 2
-  },
-  {
-    id: 'notepad',
-    name: 'NotePad',
-    icon: 'paper.svg',
-    component: NotePad,
-    feature: BASE_FEATURE
-  },
-  {
-    id: 'paint',
-    name: 'Painting',
-    icon: 'brush.svg',
-    component: PaintTool,
-    index: 3
-  }
-  // {
-  //   id: 'paintTool',
-  //   name: '그림판',
-  //   icon: 'paint_old-0.png',
-  //   items: ['menu'],
-  //   component: PaintTool
-  // }
-])
+const interactParams = ref()
+const items = ref([])
+const mainRef = ref()
+const show = ref(false)
 
-const target = ref()
-const backup = ref()
+const selected = ref()
 
-const move = ref(false)
-const resize = ref({ n: false, s: false, w: false, e: false })
+const markdown = ref()
+const html = ref()
 
-const isMouseDown = ref(false)
+const API_KEY = 'AIzaSyBgjHhLJ-4KpONdeY4zzxSbb5jZ2KDcQvA'
 
-function initResize() {
-  resize.value = { n: false, s: false, e: false, w: false }
-}
-
-function onMouseDown(event) {
-  if (target.value) {
-    isMouseDown.value = true
-    backup.value = {
-      mouse: { x: event.x, y: event.y },
-      target: { ...target.value.feature }
-    }
+const converter = new Converter({ tables: true })
+async function load(item) {
+  loading.value = true
+  show.value = true
+  try {
+    let url = `https://www.googleapis.com/drive/v3/files/${item.id}?key=${API_KEY}&alt=media`;
+    const response = await fetch(url)
+    markdown.value = await response.text()
+    html.value = converter.makeHtml(`${markdown.value}`)
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loading.value = false
   }
 }
 
-function onMouseMove(event) {
-  if (isMouseDown.value) {
-    const diff = {
-      x: event.x - backup.value.mouse.x,
-      y: event.y - backup.value.mouse.y
-    }
-
-    if (move.value) {
-      target.value.feature.x = backup.value.target.x + diff.x;
-      target.value.feature.y = backup.value.target.y + diff.y;
-    }
-
-    if (resize.value.n) {
-      target.value.feature.y = backup.value.target.y + diff.y;
-      target.value.feature.height = backup.value.target.height - diff.y;
-    }
-
-    if (resize.value.s) {
-      target.value.feature.height = backup.value.target.height + diff.y;
-    }
-
-    if (resize.value.e) {
-      target.value.feature.width = backup.value.target.width + diff.x;
-    }
-
-    if (resize.value.w) {
-      target.value.feature.x = backup.value.target.x + diff.x;
-      target.value.feature.width = backup.value.target.width - diff.x;
-    }
-    
+watch(show, (v) => {
+  if (v) {
+    init.value = false
   }
-  else {
-    if (target.value) {
-      const diff = {
-        top: event.y - target.value.feature.y,
-        left: event.x - target.value.feature.x,
-        bottom: event.y - (target.value.feature.y + target.value.feature.height),
-        right: event.x - (target.value.feature.x + target.value.feature.width)
-      }
-
-      resize.value = {
-        n: diff.top < 4,
-        s: diff.bottom > -10 && diff.bottom < 0,
-        e: diff.right > -13 && diff.right < 0,
-        w: diff.left < 4
-      }
-    }
-    else {
-      initResize()
-    }
-  }
-}
-
-function onMouseUp() {
-  isMouseDown.value = false
-  initResize()
-
-  if (target.value) {
-    if (target.value.feature.width < MIN_WIDTH)
-      target.value.feature.width = MIN_WIDTH
-
-    if (target.value.feature.height < MIN_HEIGHT)
-      target.value.feature.height = MIN_HEIGHT
-  }
-}
-
-const cursorStyle = computed(() => {
-  if (resize.value.s || resize.value.n)
-    return 'vertical'
-  else if (resize.value.e || resize.value.w)
-    return 'horizontal'
-  else
-    return 'default'
 })
 
-function onWindowMove(params) {
-  if (!isMouseDown.value)
-    move.value = params
+function write() {
+  right.value = EditorPage
+  interactParams.value = {
+    action: 'create',
+    target: selected.value
+  }
+  show.value = true
+  //mainRef.value.scrollTo({
+    // left: 500,
+    // behavior: 'smooth'
+  // })
 }
 
-function onWindowCtrl(p, program) {
-  if (!isMouseDown.value)
-    target.value = p ? program : null
+const gapi = window.gapi
+
+async function onInit() {
+  // gapi.client.init({
+  //   apiKey: 'AIzaSyBgjHhLJ-4KpONdeY4zzxSbb5jZ2KDcQvA',
+  // })
+  // .then(function() {
+  //   gapi.client.load('drive', 'v3', () => {
+  //     // console.log(gapi.client.drive)
+  //     gapi.client.drive.files.list({
+  //       params: {
+  //         q: '1CtcKoif-fUsgMpV-4C9lglTkUDy29Vil in parent'
+  //       }
+  //     })
+  //     .then(function() {
+  //       console.log(gapi)
+  //     })
+  //   })
+  // })
+
+  // await gapi.auth2.init({
+  //   apiKey: 'AIzaSyBgjHhLJ-4KpONdeY4zzxSbb5jZ2KDcQvA',
+  //   clientId: '827293727138-rpq0n9svbmdlu0hup4h4qiagvs8hujio.apps.googleusercontent.com',
+  //   scope: 'https://www.googleapis.com/auth/drive'
+  // })
+
+  // console.log(gapi.client)
+
+  // await gapi.client.load('drive', 'v3', () => {
+  //   const drive = gapi.client.drive.files.list({
+  //     params: {
+  //       corpora: 'drive',
+  //       driveId: '1CtcKoif-fUsgMpV-4C9lglTkUDy29Vil'
+  //     }
+  //   })
+  //   console.log(drive.then())
+  // })
+
+  // gapi.client.init({
+  //   apiKey: 'AIzaSyBgjHhLJ-4KpONdeY4zzxSbb5jZ2KDcQvA',
+  // })
+  // .then(() => {
+  //   console.log(gapi.client)
+  //   gapi.client.request({
+  //     path: 'https://www.googleapis.com/drive/v3/files?driveId=1CtcKoif-fUsgMpV-4C9lglTkUDy29Vil'
+  //   })
+  //   .then((v) => {
+  //     console.log(v)
+  //   })
+    // gapi.client.request({
+    //   path: 'https://www.googleapis.com/drive/v3/files/1CtcKoif-fUsgMpV-4C9lglTkUDy29Vil',
+    // })
+    // .then((v) => {
+    //   console.log('PRINT!')
+    //   console.log(v)
+    // })
+  // })
 }
 
-onMounted(async () => {
-  // for (const [index, program] of desktopPrograms.value.entries()) {
-  //   setTimeout(() => {
-  //     store.open(program);
-  //   }, 300 * index)  
-  // }
+const tabs = ref([
+  { id: 'career', name: '이력', component: HistoryPage },
+  // { id: 'galary', name: '갤러리', component: GalleryPage },
+  { id: 'archive', name: '아카이브', component: ArchivePage },
+  { id: 'profile', name: '프로필', component: ProfilePage }
+])
+const selectedTab = ref(tabs.value[0])
+
+function login() {
+  console.log('>> login')
+  // let google = window.google
+  // console.log('>> google', google)
+  // google.accounts.id.initialize({
+  //   client_id: '827293727138-rpq0n9svbmdlu0hup4h4qiagvs8hujio.apps.googleusercontent.com',
+  //   callback: handleCredentialResponse
+  // })
+  // google.accounts.id.prompt()
+}
+
+const init = ref(true)
+
+function onScrollTo(index) {
+  const height = mainRef.value.offsetHeight
+  console.log('## ', height)
+  mainRef.value.scrollTo(0, index * height);
+  currentPage.value = index
+}
+
+const currentPage = ref(0);
+
+const wheelVar = ref(true)
+
+function onOpenTab(tab) {
+  selectedTab.value = tab
+  component.value = tab.component
+}
+
+watch(currentPage, (v) => {
+  wheelVar.value = false
+  setTimeout(() => {
+    wheelVar.value = true
+  }, 1000)
+})
+
+const component = ref(HistoryPage);
+
+const date = ref(0)
+
+const opacity = ref(0)
+
+function changeOpacity() {
+  opacity.value = (window.innerWidth / 1920)
+}
+
+onMounted(() => {
+  const today = dayjs()
+  const firstDay = dayjs('2018-06-18')
+  date.value = today.diff(firstDay, 'day')
+  changeOpacity()
+
+  window.addEventListener('resize', changeOpacity)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', changeOpacity)
 })
 </script>
 
 <template>
-  <main
-    @mousemove="onMouseMove"
-    @mousedown="onMouseDown"
-    @mouseup="onMouseUp"
-    :class="cursorStyle"
-  >
-    <section class="background">
-      <div
-        v-for="program of desktopPrograms"
-        :key="program.id"
-        class="icon"
-        @click="focused = program.id"
-        @dblclick="store.open(program)"
-      >
-        <img
-          :src="require(`@/assets/icons/${focused === program.id ? 'fill' : 'line'}/${program.icon}`)"
-          alt="program.id"
-          class="filter"
-        >
-        <span
-          :class="{ focused: focused === program.id }"
-        >{{ program.name }}</span>
-      </div>
+  <main id="main">
+    <!-- Left -->
+    <section id="section">
+      <!-- Title -->
+      <section class="title">
+        <h1>유진의 아카이브</h1>
+        <h2>Programming With Me +{{ date }} Days</h2>
+      </section>
+      <!-- Window -->
+      <section class="window">
+        <div class="tabs">
+          <div>
+            <button
+              v-for="tab of tabs"
+              :key="tab.id"
+              @click="onOpenTab(tab)"
+              :class="{ selected : tab.id === selectedTab.id }"
+            >
+              {{ tab.name }}
+            </button>
+          </div>
+          <div>
+            <button><img :src="require('@/assets/icons/minimize.svg')" alt=""></button>
+            <button><img :src="require('@/assets/icons/close.svg')" alt=""></button>
+          </div>
+        </div>
+        <div class="body">
+          <component :is="toRaw(component)" @load="load" />
+        </div>
+        <div class="footer">
+          <div v-for="i of 4" :key="i"></div>
+        </div>
+      </section>
     </section>
-    <!-- <TaskBar
-      :programs="store.programs"
-      :activatedProgram="store.activatedProgram"
-      @open="store.open"
-    /> -->
-    <WindowFrame
-      v-for="program of store.programs"
-      :key="program.id"
-      :program="program"
-      :activated="store.activatedProgram === program.id"
-      :style="`z-index: ${store.sortedPrograms.findIndex(
-        v => v === program.id
-      )};
-      `"
-      @move="(p) => onWindowMove(p)"
-      @ctrl="(p) => onWindowCtrl(p, program)"
-    />
-    <Popup />
+    <!-- Right -->
+    <!-- <section class="rt" /> -->
   </main>
+  <main id="background" :style="`opacity: ${opacity}`"></main>
+  <div
+    id="slide"
+    :class="{ in : show && !init, out : !show && !init }"
+    class="scroll"
+  >
+    <section class="buttons">
+      <button @click="show = false; init = true">
+        <img :src="require('@/assets/icons/close.svg')" alt="">
+      </button>
+    </section>
+    <Loading :loading="loading" />
+    <section v-if="!loading" class="article">
+      <article v-html="html"></article>
+    </section>
+  </div>
+  <Popup />
 </template>
 
 <style scoped>
 @import 'assets/style.css';
-
-main {
-  display: grid;
-  grid-template-rows: 1fr 44px;
-  height: 100vh;
-
-  .background {
-    height: 100%;
-    padding: 10px;
-
-    .icon {
-      margin: 10px 0px;
-      display: flex;
-      flex-direction: column;
-      color: var(--text-color);
-      width: 110px;
-      height: 90px;
-      padding: 5px;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-
-      span {
-        padding: 2px 5px;
-        cursor: inherit;
-      }
-      
-      img {
-        height: 40px;
-        cursor: inherit;
-      }
-
-      &:hover {
-        cursor: var(--pointer-cursor) !important;
-      }
-    }
-  }
-}
+@import 'assets/fonts.css';
 </style>

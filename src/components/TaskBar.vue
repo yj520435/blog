@@ -135,7 +135,7 @@ window.addEventListener('click', onMouseDown)
 }
 
 #task-bar {
-  box-shadow: 0px -2px 0px var(--main-color);
+  box-shadow: 0px -2px 0px var(--base-color);
   display: grid;
   grid-template-columns: 88px 1fr 206px;
 
@@ -153,7 +153,7 @@ window.addEventListener('click', onMouseDown)
     width: 80px;
     outline: none;
     border: none !important;
-    color: var(--main-color);
+    color: var(--base-color);
 
     img {
       width: 26px;
@@ -178,10 +178,10 @@ window.addEventListener('click', onMouseDown)
       width: 30%;
       min-width: 100px;
       max-width: 200px;
-      color: var(--main-color);
+      color: var(--base-color);
    
       &.activated {
-        border-color: var(--main-color);
+        border-color: var(--base-color);
       }
 
       img {

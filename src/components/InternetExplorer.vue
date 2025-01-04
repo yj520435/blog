@@ -285,7 +285,7 @@ main > section {
 }
 
 article {
-  color: var(--main-color);
+  color: var(--base-color);
   padding: 20px;
 }
 
@@ -308,11 +308,11 @@ div.popup section {
   height: 300px;
   background-color: black;
   position: absolute;
-  color: var(--main-color);
+  color: var(--base-color);
 }
 
 div.popup section div.title {
-  background-color: var(--main-color);
+  background-color: var(--base-color);
   width: 100%;
   height: 30px;
   color: black;

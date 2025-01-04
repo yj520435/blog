@@ -134,7 +134,7 @@ const features = ref([
 main {
   height: 100%;
   padding: 2px;
-  background-color: var(--main-color);
+  background-color: var(--base-color);
   
   div.tabs {
     width: 100%;
@@ -143,13 +143,13 @@ main {
 
     button {
       padding: 4px 16px;
-      background-color: var(--background-color);
+      background-color: var(--dark-color);
       font-family: 'Noto Sans KR';
       font-weight: 600;
       font-size: 14px;
       outline: none;
-      color: var(--main-color);
-      border-color: var(--background-color);
+      color: var(--base-color);
+      border-color: var(--dark-color);
 
       &:not(:first-child) {
         border-left: none;
@@ -159,8 +159,8 @@ main {
         z-index: 3;
         border-bottom: none !important;
         padding-bottom: 6px;
-        background-color: var(--main-color);
-        color: var(--background-color);
+        background-color: var(--base-color);
+        color: var(--dark-color);
       }
     }
   }
@@ -173,18 +173,18 @@ main {
   position: relative;
   top: -2px;
   z-index: 2;
-  background-color: var(--main-color);
+  background-color: var(--base-color);
   border: 2px solid black;
 
   .base {
     height: 100%;
 
     ul {
-      background-color: var(--background-color);
+      background-color: var(--dark-color);
       margin: 2px;
       padding: 0;
       height: calc(100% - 4px);
-      color: var(--main-color);
+      color: var(--base-color);
       list-style: none;
 
       li {
@@ -263,8 +263,8 @@ main {
   }
 
   .lt {
-    background-color: var(--background-color);
-    border-color: var(--background-color);
+    background-color: var(--dark-color);
+    border-color: var(--dark-color);
     height: 100%;
 
     ul {
@@ -273,20 +273,20 @@ main {
         display: flex;
         align-items: center;
         padding: 10px;
-        color: var(--main-color);
+        color: var(--base-color);
 
         &.focused {
-          background-color: var(--main-color);
-          color: var(--background-color);
+          background-color: var(--base-color);
+          color: var(--dark-color);
         }
       }
     }
   }
 
   .rt {
-    border-color: var(--background-color);
+    border-color: var(--dark-color);
     border-right: none;
-    background-color: var(--background-color);
+    background-color: var(--dark-color);
     overflow-y: auto;
 
     ul {
@@ -296,7 +296,7 @@ main {
         align-items: center;
         gap: 10px;
         padding: 10px;
-        color: var(--main-color);
+        color: var(--base-color);
 
         img {
           height: 100%;

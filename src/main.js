@@ -3,6 +3,8 @@ import { createPinia } from 'pinia';
 import App from './App.vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import vue3GoogleLogin from 'vue3-google-login';
+
 import {
   faXmark,
   faUserSecret,
@@ -76,5 +78,10 @@ library.add(
 );
 
 const pinia = createPinia();
-
-createApp(App).use(pinia).component('font-awesome-icon', FontAwesomeIcon).mount('#app');
+createApp(App)
+  .use(pinia)
+  .use(vue3GoogleLogin, {
+    clientId: '827293727138-rpq0n9svbmdlu0hup4h4qiagvs8hujio.apps.googleusercontent.com',
+  })
+  .component('font-awesome-icon', FontAwesomeIcon)
+  .mount('#app');

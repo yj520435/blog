@@ -28,11 +28,11 @@ const {
 <style scoped>
 button {
   border-style: solid;
-  color: var(--main-color);
+  color: var(--base-color);
   font-weight: bold;
 
   &.pushed {
-    background-color: var(--main-color) !important;
+    background-color: var(--base-color) !important;
     color: black;
   }
 }
