@@ -4,8 +4,8 @@ module.exports = defineConfig({
   outputDir: 'docs',
   devServer: {
     proxy: {
-      '/macros': {
-        target: 'https://script.google.com',
+      '/drive': {
+        target: 'https://googleapis.com/drive',
         changeOrigin: true,
       },
     },

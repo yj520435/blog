@@ -1,0 +1,38 @@
+@media (width >= 900px) {
+  #main {
+    margin-left: 90px;
+    width: 800px;
+  }
+}
+
+/* slide */
+
+@media (width >= 1300px) {
+  #article.in {
+    animation: slide-in-50 0.5s forwards;
+  }
+
+  #article.out {
+    animation: slide-out-50 0.5s forwards;
+  }
+}
+
+@media (800px <= width < 1300px) {
+  #article.in {
+    animation: slide-in-75 0.5s forwards;
+  }
+
+  #article.out {
+    animation: slide-out-75 0.5s forwards;
+  }
+}
+
+@media (width < 800px) {
+  #article.in {
+    animation: slide-in-100 0.5s forwards;
+  }
+
+  #article.out {
+    animation: slide-out-100 0.5s forwards;
+  }
+}

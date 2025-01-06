@@ -1,108 +1,86 @@
-<script setup>
-import { ref } from 'vue';
-import { GoogleLogin } from 'vue3-google-login';
+<script setup lang="ts">
+import { Converter } from 'showdown';
+import { ref, Ref } from 'vue';
 
-const categories = ref([
-  { id: 'info', name: '기본 정보' },
-  { id: 'skills', name: '보유 기술' },
-  { id: 'devExp', name: '기타 개발 경험' },
-  { id: 'admin', name: '관리자 모드' },
-])
-
-const selected = ref('info')
-
-
-const infos = ref([
-  {
-    icon: 'tag',
-    text: '김유진 (1994. 05)'
-  },
-  {
-    icon: 'mail',
-    text: 'yj520435@gmail.com'
-  }
-])
-
-const skills = ref([
-  [  {
-    id: '프론트엔드',
-    items: ['Vue', 'JavaScript', 'TypeScript', 'CSS']
-  },
-  {
-    id: '백엔드',
-    items: ['Java', 'Spring Boot', 'JPA', 'MyBatis', 'PostgreSQL', 'Gradle']
-  }],
-  [
-  {
-    id: '버전관리',
-    items: ['Git']
-  },
-  {
-    id: '협업도구',
-    items: ['Jira', 'Slack']
-  },
-  ]
-])
-
-
-function login(response) {
-  console.log(response)
+interface Category {
+  id: string;
+  name: string;
+  items?: string[]
 }
 
-function load(item, index) {
-  selected.value = item.id
+const categories: Category[] = [
+  { id: 'info', name: '기본 정보' },
+  { id: 'skills', name: '보유 기술' },
+  { id: 'experience', name: '기타 개발 경험' },
+  // { id: 'admin', name: '관리자 모드' }
+]
+const selectedCategory: Ref<Category> = ref(categories[0])
+
+const divRef = ref()
+function onMove(category: Category, index: number) {
+  selectedCategory.value = category
 
   const height = divRef.value.offsetHeight;
   divRef.value.scrollTo(0, height * index)
 }
 
-const divRef = ref()
+
+const skills: Category[][] = [[
+    {
+      id: 'FrontEnd',
+      name: '프론트엔드',
+      items: ['Vue', 'Nuxt', 'JavaScript', 'TypeScript', 'Quasar', 'Vuetify']
+    },
+    {
+      id: 'BackEnd',
+      name: '백엔드',
+      items: ['Java', 'Spring', 'JPA', 'MyBatis', 'PostgreSQL', 'Gradle', 'Linux']
+    },
+  ], [
+    {
+      id: 'Version',
+      name: '버전관리',
+      items: ['Git', 'GitHub', 'GitLab']
+    },
+    {
+      id: 'CoWorkTool',
+      name: '협업도구',
+      items: ['Jira', 'Slack', 'Notion']
+    }
+  ]
+]
 </script>
 
 <template>
-  <main id="profile">
-    <section class="header">
-      <!-- <div class="lt">
-        <button>
-          <img :src="require('@/assets/icons/arrow-left.svg')" alt="">
-        </button>
-        <button>
-          <img :src="require('@/assets/icons/arrow-right.svg')" alt="">
-        </button>
-        <button>
-          <img :src="require('@/assets/icons/reset.svg')" alt="">
-        </button>
-        <button>
-          <img :src="require('@/assets/icons/home.svg')" alt="">
-        </button>
+  <main id="profile" class="component">
+    <header>
+      <div class="ct">
+        <img :src="require('@/assets/icons/user.svg')" alt=""/>
+        <img :src="require('@/assets/icons/arrow-drop-right.svg')" alt=""/>
       </div>
-      <div class="rt">
-        <img :src="require('@/assets/icons/monitor.svg')" alt=""/>
-        <img :src="require('@/assets/icons/arrow-drop-right.svg')" alt=""/> -->
-        <!-- <span v-for="path of paths" :key="path">
-          {{ path.name }}
-          <img :src="require('@/assets/icons/arrow-drop-right.svg')" alt=""/>
-        </span> -->
-      <!-- </div> -->
-    </section>
-    <section class="body">
+    </header>
+    <section>
       <div class="lt">
         <ul>
           <li
             v-for="(category, index) of categories"
             :key="category.id"
-            :class="{ selected : selected === category.id}"
-            @click="load(category, index)"
+            :class="{ selected : selectedCategory.id === category.id }"
+            @click="onMove(category, index)"
           >
             {{ category.name }}
           </li>
         </ul>
       </div>
-      <div ref="divRef" class="rt">
+      <div class="rt" ref="divRef">
         <article class="info">
-          <span v-for="info of infos" :key="info">
-            <img :src="require(`@/assets/icons/${info.icon}.svg`)" alt="">
-            {{ info.text }}
+          <span>
+            <img :src="require('@/assets/icons/tag.svg')" alt="tag">
+            김유진 (1994. 05)
+          </span>
+          <span>
+            <img :src="require('@/assets/icons/mail.svg')" alt="tag">
+            yj520435@gmail.com
           </span>
         </article>
         <article class="skill">
@@ -110,11 +88,16 @@ const divRef = ref()
             <thead></thead>
             <tbody>
               <tr v-for="(item, i) of skills" :key="i">
-                <td v-for="skill of item" :key="skill">
+                <td v-for="skill of item" :key="skill.id">
                   <div class="wrapper">
-                    <span>{{ skill.id }}</span>
+                    <span>{{ skill.name }}</span>
                     <div>
-                      <span v-for="item of skill.items" :key="item">
+                      <span
+                        v-for="item of skill.items"
+                        :key="item"
+                        class="keyword"
+                        :class="item.toLowerCase()"
+                      >
                         {{ item }}
                       </span>
                     </div>
@@ -123,95 +106,15 @@ const divRef = ref()
               </tr>
             </tbody>
           </table>
-          <!-- <table>
-            <thead></thead>
-            <tbody>
-              <tr v-for="skill of skills" :key="skill.id">
-                <td>{{ skill.id }}</td>
-                <td>
-                  <div>
-                    <span v-for="item of skill.items" :key="item">
-                      {{ item }}
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table> -->
-          <!-- <div class="wrapper">
-            <h3>{{ skill.id }}</h3>
-            <div>
-              <span v-for="item of skill.items" :key="item">
-                {{ item }}
-              </span>
-            </div>
-          </div> -->
         </article>
         <article class="etc">
           <ul>
-            <li>Flink Kafka</li>
-            <li>AWS ec2</li>
+            <li>플링크, 카프카를 이용한 실시간 데이터 스트림 처리 (데모)</li>
+            <li>AWS EC2 인스턴스 기반 스프링 부트 프로젝트 배포 및 구동</li>
             <li>Unity 2D 게임 제작 및 플레이스토어 배포</li>
           </ul>
         </article>
       </div>
-      <!-- <div>
-        <h1>기본 정보</h1>
-        <article class="info">
-          <span v-for="info of infos" :key="info">
-            <img :src="require(`@/assets/icons/${info.icon}.svg`)" alt="">
-            {{ info.text }}
-          </span>
-        </article>
-      </div>
-      <div>
-        <h1>보유 기술</h1>
-        <article class="skill" v-for="skill of skills" :key="skill.id">
-          <div class="lt">{{ skill.id }}</div>
-          <div class="rt">
-            <span v-for="item of skill.items" :key="item">
-              {{ item }}
-            </span>
-          </div>
-        </article>
-      </div>
-      <div>
-        <h1>기타 개발경험</h1>
-        <article class="etc">
-          <ul>
-            <li>Flink Kafka</li>
-            <li>AWS ec2</li>
-            <li>C#, Unity를 이용한 2D 게임 제작 및 플레이스토어 배포</li>
-          </ul>
-        </article>
-      </div>
-      <div>
-        <h1>관리자 모드</h1>
-        <article class="admin">
-          <GoogleLogin :callback="login" />
-        </article>
-      </div> -->
-      <!-- <div v-if="loading" class="before-loading">
-        <img :src="require('@/assets/icons/search.svg')" alt=""/>
-      </div>
-      <div
-        v-else
-        class="after-loading"
-        :style="`column-gap: ${computedGap}px`"
-      >
-        <div
-          class="icon"
-          v-for="file of files"
-          :key="file.id"
-          @click="open(file)"
-        >
-          <img :src="require(`@/assets/icons/${icon(file.mimeType)}.svg`)" alt=""/>
-          <span>{{ file.name }}</span>
-        </div>
-        <div v-if="files.length === 0" class="empty">
-          이 폴더는 비어있습니다.
-        </div>
-      </div> -->
     </section>
   </main>
 </template>
