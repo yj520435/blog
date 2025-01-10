@@ -1,33 +1,49 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, Ref, ref, toRaw } from 'vue';
-import WindowView from './components/WindowView.vue';
-import TitleView from './components/TitleView.vue';
-import { File, Project, Tab } from './types/base';
-import CareerPage from './components/CareerPage.vue';
-import ArchivePage from './components/ArchivePage.vue';
-import ProfilePage from './components/ProfilePage.vue';
+import { onMounted, onUnmounted, Ref, ref, watch } from 'vue';
+import { File, Tab } from './types';
+import IndexPage from './components/IndexPage.vue';
 import ArticlePage from './components/ArticlePage.vue';
-import dayjs from 'dayjs';
 
+const tabs: Ref<Tab[]> = ref([{
+  id: 'base', name: '로컬 디스크 (C:)'
+}])
+const selectedTab: Ref<Tab> = ref(tabs.value[0])
 
-
-const init: Ref<boolean> = ref(true)
-const show: Ref<boolean> = ref(false)
+// File Loading
+let interval: number | undefined = undefined
+const count: Ref<number> = ref(0)
 const loading: Ref<boolean> = ref(false)
-const opacity: Ref<number> = ref(0)
-const date: Ref<number> = ref(0)
 
-function onCalculateDate() {
-  const today = dayjs()
-  const firstDay = dayjs('2021-06-01')
-  date.value = today.diff(firstDay, 'day')
+function onCount() {
+  count.value = count.value < 3 ? count.value + 1 : 0
 }
+
+watch(loading, (v: boolean) => {
+  if (v) {
+    count.value = 0
+    interval = setInterval(onCount, 500)
+  } else {
+    clearInterval(interval)
+    interval = undefined
+  }
+})
+
+const file: Ref<File | undefined> = ref()
+function load(item: File) {
+  if (item.id.startsWith('-'))
+    return
+  
+  file.value = item
+  loading.value = true
+}
+
+// Background Opacity
+const opacity: Ref<number> = ref(0)
 function changeOpacity() {
   opacity.value = (window.innerWidth / 1920)
 }
 
 onMounted(() => {
-  onCalculateDate()
   changeOpacity()
   window.addEventListener('resize', changeOpacity)
 })
@@ -35,70 +51,14 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', changeOpacity)
 })
-
-  const tabs: Ref<Tab[]> = ref([
-    {
-      id: 'career',
-      name: '이력',
-      component: CareerPage
-    },
-    {
-      id: 'archive',
-      name: '보관함',
-      component: ArchivePage
-    },
-    {
-    id: 'profile',
-    name: '프로필',
-    component: ProfilePage
-  }
-])
-const selectedTab: Ref<Tab> = ref(tabs.value[0])
-
-const file: Ref<File | undefined> = ref()
-const flag: Ref<boolean> = ref(false)
-
-// const markdown: Ref<string> = ref('')
-// const html: any = ref()
-// async function onLoad(item: Project) {
-//   loading.value = true
-//   show.value = true
-//   try {
-//     let url = `https://www.googleapis.com/drive/v3/files/${item.id}?key=${API_KEY}&alt=media`;
-//     const response = await fetch(url)
-//     markdown.value = await response.text()
-//     html.value = converter.makeHtml(`${markdown.value}`)
-//   } catch (e) {
-//     console.error(e)
-//   } finally {
-//     loading.value = false
-//   }
-// }
-
-function onOpenTab(tab: Tab) {
-  selectedTab.value = tab
-}
-
-function load(item: File, storeYn: boolean) {
-  if (item.id.startsWith('-'))
-    return
-  
-  file.value = item
-  flag.value = storeYn
-}
-
-function close() {
-  file.value = undefined;
-  flag.value = false
-}
-
 </script>
 
 <template>
+  <!-- Main Area -->
   <main id="main">
     <section id="title">
-      <h2>Front-End Developer</h2>
-      <h1>김유진의 아카이브</h1>
+      <h1>Greetings!</h1>
+      <h2>프론트엔드 개발자 김유진의 포트폴리오입니다.</h2>
     </section>
     <section id="window">
       <header>
@@ -106,34 +66,28 @@ function close() {
           <button
             v-for="tab of tabs"
             :key="tab.id"
-            @click="onOpenTab(tab)"
+            @click="selectedTab = tab"
             :class="{ selected : tab.id === selectedTab.id }"
           >
             {{ tab.name }}
           </button>
         </div>
         <div class="rt">
-          <button>
-            <img
-              :src="require('@/assets/icons/minimize.svg')"
-              alt="minimize"
-            >
-          </button>
-          <button>
-            <img
-              :src="require('@/assets/icons/close.svg')"
-              alt="close"
-            >
-          </button>
+          <button><img :src="require('@/assets/icons/minimize.svg')" alt="minimize"></button>
+          <button><img :src="require('@/assets/icons/close.svg')" alt="close"></button>
         </div>
       </header>
       <section>
-        <component
-          :is="toRaw(selectedTab.component)"
-          @load="load"
-        />
+        <IndexPage @load="load" />
+        <!-- <component :is="toRaw(selectedTab.component)" @load="load" /> -->
       </section>
       <footer></footer>
+      <section v-if="loading" id="loading">
+        <div>
+          <span v-for="i of count" :key="i"></span>
+        </div>
+        로딩중
+      </section>
     </section>
   </main>
   <!-- Background Image -->
@@ -144,36 +98,11 @@ function close() {
   <!-- Slide View -->
   <ArticlePage
     :file="file"
-    :flag="flag"
-    @close="close"
+    @close="file = undefined;"
+    @ready="loading = false"
   />
 </template>
 
-<!-- <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import HelloWorld from './components/HelloWorld.vue';
-
-@Options({
-  components: {
-    HelloWorld,
-  },
-})
-export default class App extends Vue {}
-</script> -->
-
 <style lang="scss">
-@import 'assets/style.scss';
-@import 'assets/fonts.scss';
-@import 'assets/media.scss';
-@import 'assets/animation.scss';
-/*
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-*/
+@import 'assets/fonts', 'assets/style', 'assets/media', 'assets/animation';
 </style>

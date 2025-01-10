@@ -1,13 +1,25 @@
-import { API_KEY, API_URL, JSON } from '@/constants';
+import { API_KEY, API_URL } from '@/constants';
+import { MimeType } from '@/types';
 import axios from 'axios';
+
+export function getIcon(mimeType: MimeType) {
+  switch (mimeType) {
+    case 'text/x-markdown':
+      return 'file';
+    case 'application/vnd.google-apps.folder':
+      return 'folder';
+    default:
+      return 'unknown';
+  }
+}
 
 export function sortAlphabetically(pa: string, pb: string) {
   const a = pa.toLowerCase();
   const b = pb.toLowerCase();
 
   if (a > b) return 1;
-  if (a < b) return -1;
-  if (a === b) return 0;
+  else if (a < b) return -1;
+  else return 0;
 }
 
 export async function loadFolder(id: string) {
@@ -33,7 +45,7 @@ export async function loadFile(id: string, type?: string) {
   try {
     const response = await fetch(url);
     if (response.ok) {
-      const data = type === JSON ? response.json() : response.text();
+      const data = type === 'json' ? response.json() : response.text();
       return data;
     } else {
       const data = await reloadFile(id);
