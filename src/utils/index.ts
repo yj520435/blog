@@ -22,10 +22,28 @@ export function sortAlphabetically(pa: string, pb: string) {
   else return 0;
 }
 
+async function fetchWithTimeout(url: string, options: any = {}) {
+  const { timeout = 8000 } = options;
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  const response = await fetch(url, {
+    ...options,
+    signal: controller.signal,
+  });
+  clearTimeout(id);
+
+  return response;
+}
+
 export async function loadFolder(id: string) {
   const url = `https://www.googleapis.com/drive/v3/files?q="${id}"+in+parents&key=${API_KEY}`;
   try {
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url, { timeout: 2000 });
+    // const response = await fetch(url, {
+    //   signal: controller.signal
+    // });
     if (response.ok) {
       const data = (await response.json()).files;
       return data;
@@ -43,7 +61,9 @@ export async function loadFolder(id: string) {
 export async function loadFile(id: string, type?: string) {
   const url = `https://www.googleapis.com/drive/v3/files/${id}?key=${API_KEY}&alt=media`;
   try {
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url, {
+      timeout: 2000,
+    });
     if (response.ok) {
       const data = type === 'json' ? response.json() : response.text();
       return data;

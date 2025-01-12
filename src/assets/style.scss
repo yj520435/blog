@@ -23,12 +23,12 @@ body::-webkit-scrollbar {
 span.keyword {
   padding: 3px 10px;
   border-radius: 6px;
-  background-color: #b2222216;
+  background-color: #ffffff;
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 1px;
-  box-shadow: 4px 4px 0 transparent;
-  border: 2px solid transparent;
+  box-shadow: 4px 4px 0 #b2222230;
+  border: 2px solid #b2222230;
 
   &:hover {
     border-color: firebrick;
@@ -361,9 +361,10 @@ div.fail {
   box-shadow: 0 0 100px #dddddd;
   right: 0;
   top: 0;
-  display: grid;
-  grid-template-rows: 60px 1fr;
+  display: flex;
+  flex-direction: column;
   z-index: 20;
+  gap: 10px;
 
   section.buttons {
     display: flex;
@@ -418,6 +419,8 @@ div.fail {
     padding: 20px 40px;
 
     article {
+      width: 100%;
+
       h1,
       h2,
       h3 {
@@ -443,17 +446,47 @@ div.fail {
         font-weight: 800;
       }
 
+      h4 {
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
       a {
         color: #b2222280;
         text-decoration: underline;
       }
 
       strong {
-        background-color: #ffd70060;
+        font-weight: 700;
+      }
+
+      mark {
+        background-color: #ffd70030;
       }
 
       p {
         line-height: 2;
+        margin: 40px 0;
+      }
+
+      sub {
+        position: relative;
+        font-size: 13px;
+        color: gray;
+        display: inline-block;
+        top: -4px;
+        height: 18px;
+      }
+
+      sup {
+        display: inline-block;
+        color: gray;
+        padding: 0;
+        font-size: 13px;
+
+        * {
+          font-size: inherit;
+        }
       }
 
       p code,
@@ -466,17 +499,37 @@ div.fail {
         font-size: 0.9rem;
       }
 
-      pre {
-        background-color: #00000008;
-        border-radius: 16px;
-        padding: 20px;
-        line-height: 1.4;
+      blockquote {
+        border-left: 9px solid firebrick;
+        margin: 0;
+        padding: 0 20px;
+      }
 
-        code {
-          font-family: 'Fira Code';
+      pre {
+        * {
+          font-family: 'Fira Code', 'Paperlogy' !important;
+          line-height: 1.6;
           font-size: 0.9rem;
         }
+
+        code {
+          border-radius: 16px !important;
+          text-wrap: wrap;
+        }
       }
+
+      // pre {
+      //   background-color: #00000008;
+      //   border-radius: 16px;
+      //   padding: 20px;
+      //   line-height: 1.4;
+      //   text-wrap: wrap;
+
+      //   code {
+      //     font-family: 'Fira Code', 'Paperlogy';
+      //     font-size: 0.9rem;
+      //   }
+      // }
 
       ol {
         padding-left: 40px;
@@ -801,7 +854,10 @@ div.fail {
             grid-template-rows: 30px 1fr;
             width: 50%;
             height: 50%;
-            font-weight: 600;
+
+            > span {
+              font-weight: 700;
+            }
 
             div {
               display: flex;
@@ -894,17 +950,18 @@ div.fail {
           display: flex;
           flex-wrap: wrap;
           width: 100%;
-          height: 100%;
+          height: inherit;
           align-content: baseline;
 
           div.icon {
             width: 110px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             padding: 20px 10px;
             gap: 4px;
             flex-wrap: wrap;
+            position: relative;
 
             img {
               height: 46px;
@@ -922,6 +979,7 @@ div.fail {
             &:hover {
               background-color: firebrick;
               color: white;
+              z-index: 6;
 
               img {
                 filter: invert(100%) sepia(0%) saturate(7500%) hue-rotate(170deg)
@@ -933,8 +991,11 @@ div.fail {
                 color: white;
                 overflow-wrap: break-word;
                 height: fit-content;
-                width: 100px;
+                width: 110px;
                 display: block;
+                position: absolute;
+                top: 70px;
+                padding: 0 10px 10px 10px;
               }
             }
           }
