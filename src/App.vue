@@ -5,7 +5,7 @@ import IndexPage from './components/IndexPage.vue';
 import ArticlePage from './components/ArticlePage.vue';
 
 const tabs: Ref<Tab[]> = ref([{
-  id: 'base', name: '로컬 디스크 (C:)'
+  id: 'base', name: '포트폴리오 (P:)'
 }])
 const selectedTab: Ref<Tab> = ref(tabs.value[0])
 

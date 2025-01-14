@@ -74,6 +74,7 @@ async function read(id: string) {
 // Archives
 const archiveRef = ref()
 const computedGap = ref(0)
+const listView = ref(true)
 
 const buttons = ref([
   {
@@ -93,15 +94,30 @@ const buttons = ref([
   },
   {
     id: 'view',
-    icon: 'list.svg'
+    icon: 'list.svg',
+    action: () => listView.value = !listView.value
   },
 ])
 
 function computeGap() {
+  if (!archiveRef.value || !archiveRef.value.width || listView.value)
+    return
+
   const width = archiveRef.value.offsetWidth
   const itemCnt = Math.trunc(width / 110)
   computedGap.value = (width % 110) / (itemCnt - 1)
 }
+
+function computeIcon() {
+  return listView.value ? 'list.svg' : 'grid.svg'
+}
+
+watch(listView, (v) => {
+  const target = buttons.value.find((v) => v.id === 'view')
+  if (target) {
+    target.icon = v ? 'grid.svg' : 'list.svg'
+  }
+})
 
 // Path
 const paths: Ref<File[]> = ref([])
@@ -174,7 +190,7 @@ async function open(file: File) {
 
 // ETC Dev Experience
 const projects = [
-  { id: '10nvMm_VzaMxF21htCetwhdso3mOSYWFP', name: 'Vue3 개인 포트폴리오 구현' },
+  // { id: '10nvMm_VzaMxF21htCetwhdso3mOSYWFP', name: 'Vue3 개인 포트폴리오 구현' },
   { id: '-RealTimeDataStreamDemo', name: '플링크, 카프카를 이용한 실시간 데이터 스트림 처리 (데모)' },
   { id: '-MicroBlog', name: 'AWS EC2 인스턴스 기반 스프링 부트 프로젝트 배포 및 구동' },
   { id: '-Qloud', name: 'Unity 2D 게임 제작 및 플레이스토어 배포' },
@@ -282,7 +298,7 @@ onMounted(async () => {
           </div>
           <div
             v-else
-            class="wrapper"
+            :class="!listView ? 'grid' : 'list'"
             :style="`column-gap: ${computedGap}px`"
           >
             <div
