@@ -58,7 +58,7 @@ onUnmounted(() => {
   <main id="main">
     <section id="title">
       <h1>KIM YUJIN</h1>
-      <h2>프론트엔드 개발자 김유진의 포트폴리오입니다.</h2>
+      <h2>Junior Web Developer</h2>
     </section>
     <section id="window">
       <header>
