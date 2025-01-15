@@ -2,26 +2,23 @@
 import { File } from '@/types';
 import { loadFile } from '@/utils';
 import { Converter } from 'showdown';
-import { defineProps, defineEmits, ref, Ref, toRef, watch, onMounted } from 'vue';
-import CodeHighLight from 'vue-code-highlight/src/CodeHighlight.vue'
-// import 'vue-code-highlight/themes/duotone-sea.css'
+import { defineProps, defineEmits, ref, Ref, toRef, watch } from 'vue';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github.css'
-
-import javascript from 'highlight.js/lib/languages/javascript'
 
 const props = defineProps(['file'])
 const emits = defineEmits(['ready', 'close'])
 
 const init: Ref<boolean> = ref(true)
 const show: Ref<boolean> = ref(false)
+const mainRef = ref()
 
-  const file: Ref<File> = toRef(() => props.file)
-
-// File Load
 const converter = new Converter({ tables: true })
 const markdown: Ref<string> = ref('')
 const html: any = ref()
+
+// File Load
+const file: Ref<File> = toRef(() => props.file)
 watch(file, async (value: File) => {
   if (!value)
     return
@@ -33,9 +30,15 @@ watch(file, async (value: File) => {
 
   show.value = true
   init.value = false
+
+  // Code highlight
   setTimeout(() => {
     hljs.highlightAll()
   }, 500)
+
+  // Scroll
+  if (mainRef.value)
+    mainRef.value.scrollTo(0, 0)
 })
 
 function onClose() {
@@ -46,6 +49,7 @@ function onClose() {
 
 <template>
   <main
+    ref="mainRef"
     id="article"
     :class="{
       in : show && !init,

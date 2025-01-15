@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, Ref, ref, watch } from 'vue';
 import { File, Tab } from './types';
 import IndexPage from './components/IndexPage.vue';
 import ArticlePage from './components/ArticlePage.vue';
+import dayjs from 'dayjs';
 
 const tabs: Ref<Tab[]> = ref([{
   id: 'base', name: '포트폴리오 (P:)'
@@ -30,9 +31,14 @@ watch(loading, (v: boolean) => {
 
 const file: Ref<File | undefined> = ref()
 function load(item: File) {
+  // Invalid file
   if (item.id.startsWith('-'))
     return
-  
+
+  // Already opened file
+  if (file.value && file.value.id === item.id)
+    return
+
   file.value = item
   loading.value = true
 }

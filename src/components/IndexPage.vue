@@ -74,7 +74,7 @@ async function read(id: string) {
 // Archives
 const archiveRef = ref()
 const computedGap = ref(0)
-const listView = ref(true)
+const listView = ref(false)
 
 const buttons = ref([
   {
