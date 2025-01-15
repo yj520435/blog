@@ -13,6 +13,11 @@ export const useStore = defineStore('store', () => {
     return folderItemsMap.value.find((v) => v.id === id);
   }
 
+  function deleteFolder(id: string) {
+    const targetIndex = folderItemsMap.value.findIndex((v) => v.id === id);
+    folderItemsMap.value.splice(targetIndex, 1);
+  }
+
   // File & Contents
   const fileContentsMap: Ref<{ id: string; contents: any }[]> = ref([]);
 
@@ -27,6 +32,7 @@ export const useStore = defineStore('store', () => {
   return {
     setFolder,
     getFolder,
+    deleteFolder,
     setFile,
     getFile,
   };

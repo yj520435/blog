@@ -85,7 +85,7 @@ const buttons = ref([
   {
     id: 'reload',
     icon: 'refresh.svg',
-    action: () => reload()
+    action: async () => await reload(currentPath.value)
   },
   {
     id: 'home',
@@ -108,10 +108,6 @@ function computeGap() {
   computedGap.value = (width % 110) / (itemCnt - 1)
 }
 
-function computeIcon() {
-  return listView.value ? 'list.svg' : 'grid.svg'
-}
-
 watch(listView, (v) => {
   const target = buttons.value.find((v) => v.id === 'view')
   if (target) {
@@ -121,10 +117,15 @@ watch(listView, (v) => {
 
 // Path
 const paths: Ref<File[]> = ref([])
-const computedPaths = computed(() => paths.value.length)
+const currentPath = computed(() => {
+  const id = paths.value.length > 0
+    ? paths.value[paths.value.length - 1].id
+    : ARCHIVE_ROOT
+  return id
+})
 
-watch(computedPaths, async () => {
-  await reload()
+watch(currentPath, async (value) => {
+  await load(value)
 })
 
 // Folder & File Loading
@@ -141,7 +142,6 @@ async function load(id: string) {
     files.value = storedFiles.items
   } else {
     const result = await loadFolder(id)
-    console.log('>> result', result)
     if (result.length > 0)
       files.value = filterAndSort(result)
     store.setFolder(id, files.value)
@@ -172,10 +172,8 @@ function filterAndSort(data: File[]) {
   return sortedDirectories.concat(sortedFiles)
 }
 
-async function reload() {
-  const id = paths.value.length > 0
-    ? paths.value[paths.value.length - 1].id
-    : ARCHIVE_ROOT
+async function reload(id: string) {
+  store.deleteFolder(id)
   await load(id)
 }
 
