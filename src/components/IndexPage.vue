@@ -330,7 +330,7 @@ onMounted(async () => {
               } as File)"
               :class="{ 'no-item': project.id.startsWith('-') }"
             >
-              {{ project.name }}
+              <span></span>{{ project.name }}
             </li>
           </ul>
         </section>

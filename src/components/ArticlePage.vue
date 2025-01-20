@@ -41,7 +41,7 @@ watch(file, async (value: File) => {
     mainRef.value.scrollTo(0, 0)
 })
 
-function onClose() {
+function close() {
   show.value = false
   emits('close')
 }
@@ -58,17 +58,14 @@ function onClose() {
     class="scroll"
   >
     <section class="buttons">
-      <button @click="onClose">
-        <img :src="require('@/assets/icons/close.svg')" alt="close">
-      </button>
+      <div>
+        <button @click="close">
+          <img :src="require('@/assets/icons/close.svg')" alt="close">
+        </button>
+      </div>
     </section>
     <section class="article">
       <article v-html="html" />
     </section>
-    <!-- <div>
-      <CodeHighLight language="js">
-        console.log(11)
-      </CodeHighLight>
-    </div> -->
   </main>
 </template>

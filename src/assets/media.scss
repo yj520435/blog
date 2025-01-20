@@ -8,31 +8,49 @@
 /* slide */
 
 @media (width >= 1300px) {
-  #article.in {
-    animation: slide-in-50 0.5s forwards;
-  }
+  #article {
+    &.in {
+      animation: slide-in-50 0.5s forwards;
+    }
 
-  #article.out {
-    animation: slide-out-50 0.5s forwards;
+    &.out {
+      animation: slide-out-50 0.5s forwards;
+    }
+
+    section.buttons {
+      width: calc(50% - 9px);
+    }
   }
 }
 
 @media (800px <= width < 1300px) {
-  #article.in {
-    animation: slide-in-75 0.5s forwards;
-  }
+  #article {
+    &.in {
+      animation: slide-in-75 0.5s forwards;
+    }
 
-  #article.out {
-    animation: slide-out-75 0.5s forwards;
+    &.out {
+      animation: slide-out-75 0.5s forwards;
+    }
+
+    section.buttons {
+      width: calc(75% - 9px);
+    }
   }
 }
 
 @media (width < 800px) {
-  #article.in {
-    animation: slide-in-100 0.5s forwards;
-  }
+  #article {
+    &.in {
+      animation: slide-in-100 0.5s forwards;
+    }
 
-  #article.out {
-    animation: slide-out-100 0.5s forwards;
+    &.out {
+      animation: slide-out-100 0.5s forwards;
+    }
+
+    section.buttons {
+      width: 100%;
+    }
   }
 }
