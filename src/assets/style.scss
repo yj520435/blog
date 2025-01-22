@@ -568,20 +568,21 @@ div.fail {
         }
       }
 
-      ul.env {
-        background-color: #b2222210;
-        padding: 10px 20px;
+      ul.dev-langs {
+        padding: 0;
         list-style: none;
-        border-radius: 20px;
+        display: flex;
+        gap: 10px;
 
         li {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-
-          &::before {
-            content: '\2043';
-          }
+          width: fit-content;
+          padding: 3px 10px;
+          border-radius: 6px;
+          background-color: #b22222;
+          color: white;
+          font-size: 0.8rem;
+          font-weight: 600;
+          letter-spacing: 1px;
         }
       }
     }
