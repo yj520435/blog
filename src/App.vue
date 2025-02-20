@@ -1,113 +1,277 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, Ref, ref, watch } from 'vue';
-import { File, Tab } from './types';
-import IndexPage from './components/IndexPage.vue';
-import ArticlePage from './components/ArticlePage.vue';
+import { computed, onMounted, Ref, ref, watch } from 'vue';
+import { File } from './types';
+import { filterAndSort, getIcon, loadFile, loadFolder } from './utils';
+import { Converter } from 'showdown';
+import { useStore } from './store';
+import { ARCHIVE_ROOT, companies, FOLDER_MIME_TYPE, projects, skills } from './constants';
+import dayjs from 'dayjs';
 
-const tabs: Ref<Tab[]> = ref([{
-  id: 'base', name: '포트폴리오 (P:)'
-}])
-const selectedTab: Ref<Tab> = ref(tabs.value[0])
+const store = useStore()
 
-// File Loading
-let interval: number | undefined = undefined
-const count: Ref<number> = ref(0)
-const loading: Ref<boolean> = ref(false)
-
-function onCount() {
-  count.value = count.value < 3 ? count.value + 1 : 0
+const scale = ref(1);
+function resize(event?: any) {
+  const width = event ? event.target.innerWidth : window.innerWidth
+  scale.value = 1 + (width - 500) * (0.3 / 1420);
 }
 
-watch(loading, (v: boolean) => {
-  if (v) {
-    count.value = 0
-    interval = setInterval(onCount, 500)
-  } else {
-    clearInterval(interval)
-    interval = undefined
-  }
+// Projects
+const color = ref(false)
+const projectIndex = ref(0)
+const project = computed(() => projects[projectIndex.value])
+const isFirstProject = computed(() => projectIndex.value === 0)
+const isLastProject = computed(() => projectIndex.value === projects.length - 1)
+
+function prev() {
+  if (!isFirstProject.value)
+   projectIndex.value -= 1;
+}
+
+function next() {
+  if (!isLastProject.value)
+    projectIndex.value += 1;
+}
+
+// Archives
+const files: Ref<File[]> = ref([])
+const loading: Ref<boolean> = ref(true)
+const paths: Ref<string[]> = ref([])
+
+const isRoot = computed(() => paths.value[paths.value.length - 1] === ARCHIVE_ROOT)
+
+watch(paths, async (value) => {
+  const id = value[value.length - 1]
+  await load(id)
+}, {
+  deep: true
 })
 
-const file: Ref<File | undefined> = ref()
-function load(item: File) {
-  // Invalid file
-  if (item.id.startsWith('-'))
-    return
-
-  // Already opened file
-  if (file.value && file.value.id === item.id)
-    return
-
-  file.value = item
+async function load(id: string) {
+  files.value = []
   loading.value = true
+
+  const storedFiles = store.getFolder(id)
+
+  if (storedFiles) {
+    files.value = storedFiles.items
+  } else {
+    const result = await loadFolder(id)
+    if (result.length > 0)
+      files.value = filterAndSort(result)
+    store.setFolder(id, files.value)
+  }
+
+  loading.value = false
 }
 
-// Background Opacity
-const opacity: Ref<number> = ref(0)
-function changeOpacity() {
-  opacity.value = (window.innerWidth / 1920)
+async function open(file: File) {
+  if (file.mimeType === FOLDER_MIME_TYPE)
+    paths.value.push(file.id)
+  else
+    await read(file.id)
 }
 
-onMounted(() => {
-  changeOpacity()
-  window.addEventListener('resize', changeOpacity)
-})
+// Article
+const shadow = ref(false)
+const reading: Ref<boolean> = ref(true)
+const show = ref('show');
 
-onUnmounted(() => {
-  window.removeEventListener('resize', changeOpacity)
+const markdown = ref('')
+const html = ref()
+const converter = new Converter({ tables: true, simpleLineBreaks: true })
+
+const articleRef = ref()
+
+async function read(id: string) {
+  shadow.value = true
+  markdown.value = await loadFile(id)
+  html.value = converter.makeHtml(`${markdown.value}`)
+  reading.value = false
+}
+
+function close() {
+  shadow.value = false;
+  reading.value = true
+}
+
+function wheel(event: WheelEvent) {
+  const el = articleRef.value
+  if (el.clientHeight < el.scrollHeight)
+    show.value = event.deltaY < 0 ? 'show' : 'hide'
+}
+
+// Footer
+const lastBuild = ref()
+
+onMounted(async () => {
+  paths.value.push(ARCHIVE_ROOT)
+  lastBuild.value = document.documentElement.dataset.build;
+  // resize()
+  // window.addEventListener('resize', resize)
 })
 </script>
 
 <template>
-  <!-- Main Area -->
-  <main id="main">
-    <section id="title">
-      <h1>KIM YUJIN</h1>
-      <h2>Junior Web Developer</h2>
-    </section>
-    <section id="window">
+  <main id="root" class="scroll" :class="{ 'no-scroll' : shadow }">
+    <div :style="`transform: scale(${scale})`">
       <header>
-        <div class="lt">
-          <button
-            v-for="tab of tabs"
-            :key="tab.id"
-            @click="selectedTab = tab"
-            :class="{ selected : tab.id === selectedTab.id }"
-          >
-            {{ tab.name }}
-          </button>
+        <div id="avatar">
+          <img :src="require('@/assets/images/profile.png')" alt="">
         </div>
-        <div class="rt">
-          <button><img :src="require('@/assets/icons/minimize.svg')" alt="minimize"></button>
-          <button><img :src="require('@/assets/icons/close.svg')" alt="close"></button>
-        </div>
+        <h1>Yu Jin</h1>
       </header>
-      <section>
-        <IndexPage @load="load" />
-        <!-- <component :is="toRaw(selectedTab.component)" @load="load" /> -->
-      </section>
-      <footer></footer>
-      <section v-if="loading" id="loading">
-        <div>
-          <span v-for="i of count" :key="i"></span>
+      <!-- PROFILE -->
+      <section id="profile">
+        <span class="title">PROFILE</span>
+        <div class="outline">
+          <p>김유진 (1994. 05)</p>
+          <p>주니어 웹 개발자</p>
         </div>
-        로딩중
       </section>
-    </section>
+      <div class="wrapper">
+        <!-- EDUCATION -->
+        <section id="education">
+          <span class="title">EDUCATION</span>
+          <ul class="outline list">
+            <li>인천대학교 컴퓨터공학부</li>
+          </ul>
+        </section>
+        <!-- CERTIFICATES -->
+        <section id="certificates">
+          <span class="title">CERTIFICATES</span>
+          <ul class="outline list">
+            <li>정보처리기사</li>
+          </ul>
+        </section>
+      </div>
+      <!-- SKILLS -->
+      <section id="skills">
+        <span class="title">SKILLS</span>
+        <ul class="outline list">
+          <li v-for="skill of skills" :key="skill.id">
+            <span class="name">{{ skill.id }}</span>
+            <span>&gt;</span>
+            <span>{{ skill.items?.join(' ・ ') }}</span>
+          </li>
+        </ul>
+      </section>
+      <!-- CAREERS -->
+      <section id="career">
+        <span class="title">CAREER</span>
+        <div class="outline">
+          <ul
+            v-for="company of companies"
+            :key="company.id"
+            class="list"
+            :class="{ disabled : company.id.startsWith('-')}"
+          >
+            <li class="name" @click="() => {
+                if (!company.id.startsWith('-'))
+                  read(company.id)
+              }">
+              {{ company.name }}
+            </li>
+            <li class="date">
+              {{ company.from }} - {{ company.to }}
+            </li>
+            <li class="dep">
+              {{ company.department }} / {{ company.position }}
+            </li>
+            <li class="task">
+              {{ company.tasks }}
+            </li>
+        </ul>
+        </div>
+      </section>
+      <!-- PROJECTS -->
+      <section id="project">
+        <span class="title">SIDE PROJECT</span>
+        <div class="outline">
+          <article class="scroll">
+            <div
+              class="image"
+              :style="{
+                backgroundImage:
+                'url(' + require(`@/assets/images/${project.id}.gif`) + ')'
+              }"
+              @click="color = !color"
+              :class="{ color : color }"
+            />
+            <ul class="list">
+              <li class="name">
+                <a :href="project.link" target="_blank">
+                  {{ project.name }}
+                </a>
+              </li>
+              <li class="date">
+                {{ project.from }} - {{ project.to }}
+              </li>
+              <li class="keywords">
+                {{ project.keywords.join(' ・ ') }}
+              </li>
+              <li class="comment">
+                <span v-html="project.comment" />
+              </li>
+            </ul>
+          </article>
+          <span class="counts">
+            <button @click="prev" :disabled="isFirstProject" />
+            <span>{{ projectIndex + 1 }} / {{ projects.length }}</span>
+            <button @click="next" :disabled="isLastProject" />
+          </span>
+        </div>
+      </section>
+      <!-- ARCHIVE -->
+      <section id="archive">
+        <span class="title">ARCHIVE</span>
+        <div v-if="loading" class="loading">
+          <img :src="require('@/assets/icons/search.svg')" alt="loading">
+        </div>
+        <div v-else class="view">
+          <ul class="list">
+            <li
+              v-if="!isRoot"
+              class="root"
+              @click="paths = [ARCHIVE_ROOT]"
+            >.</li>
+            <li
+              v-if="!isRoot"
+              class="back"
+              @click="paths.pop()"
+            >..</li>
+            <li
+              v-for="file of files"
+              :key="file.id"
+              :class="getIcon(file.mimeType)"
+              @click="open(file)"
+            >
+              {{ file.name }}
+            </li>
+          </ul>
+          <div v-if="files.length === 0" class="empty">
+            EMPTY
+          </div>
+        </div>
+      </section>
+      <footer>
+        <p>Last Updated {{ dayjs(lastBuild).format('YYYY-MM-DD') }}</p>
+        <p>Contact Me yj520435@gmail.com</p>
+      </footer>
+    </div>
   </main>
-  <!-- Background Image -->
-  <main
-    id="background"
-    :style="`opacity: ${opacity}`"
-  />
-  <!-- Slide View -->
-  <ArticlePage
-    :file="file"
-    @close="file = undefined;"
-    @ready="loading = false"
-  />
+  <main id="shadow" v-if="shadow">
+    <div v-if="reading" class="loading">
+      <img :src="require('@/assets/icons/search.svg')" alt="loading">
+    </div>
+    <div v-else class="article">
+      <div class="buttons" :class="show">
+        <button class="close" @click="close"/>
+      </div>
+      <article v-html="html" ref="articleRef" class="scroll" @wheel.passive="wheel" />
+    </div>
+  </main>
 </template>
 
 <style lang="scss">
-@import 'assets/fonts', 'assets/style', 'assets/media', 'assets/animation';
+@import 'assets/fonts', 'assets/style', 'assets/animation', 'assets/media';
 </style>

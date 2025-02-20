@@ -1,0 +1,29 @@
+[
+  {
+    "id": "portfolio",
+    "name": "Portfolio",
+    "from": "2025. 01",
+    "to": "2025. 02",
+    "keywords": ["Vue3", "TypeScript"],
+    "comment": "포트폴리오",
+    "link": "https://github.com/yj520435/yj520435.github.io"
+  },
+  {
+    "id": "fumblr",
+    "name": "Fumblr",
+    "from": "2021. 08",
+    "to": "2021. 11",
+    "keywords": ["JSP", "Servlet", "Spring", "MyBatis"],
+    "comment": "텀블러(<a href='https://www.tumblr.com/'>tumblr</a>)를 모방한 마이크로 블로그",
+    "link": "https://github.com/yj520435/fumblr"
+  },
+  {
+    "id": "qloud",
+    "name": "Qloud",
+    "from": "2017. 01",
+    "to": "2017. 05",
+    "keywords": ["C#", "Unity"],
+    "comment": "모바일 2D 함정 피하기 게임 (졸업작품)",
+    "link": "https://github.com/yj520435/qloud"
+  }
+]

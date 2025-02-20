@@ -1,80 +1,24 @@
-@keyframes slide-in-50 {
+@keyframes show {
   0% {
-    width: 0%;
-    border-left: none;
     opacity: 0;
+    height: 0;
   }
 
   100% {
-    width: 50%;
-    border-left: 9px solid black;
     opacity: 1;
+    height: 40px;
   }
 }
 
-@keyframes slide-in-75 {
+@keyframes hide {
   0% {
-    width: 0%;
-    border-left: none;
-    opacity: 0;
+    opacity: 1;
+    height: 40px;
   }
 
   100% {
-    width: 75%;
-    border-left: 9px solid black;
-    opacity: 1;
-  }
-}
-
-@keyframes slide-in-100 {
-  0% {
-    width: 0%;
     opacity: 0;
-  }
-
-  100% {
-    width: 100%;
-    opacity: 1;
-  }
-}
-
-@keyframes slide-out-50 {
-  0% {
-    width: 50%;
-    border-left: 9px solid black;
-    opacity: 1;
-  }
-
-  100% {
-    width: 0%;
-    border-left: none;
-    opacity: 0;
-  }
-}
-
-@keyframes slide-out-75 {
-  0% {
-    width: 75%;
-    border-left: 9px solid black;
-    opacity: 1;
-  }
-
-  100% {
-    width: 0%;
-    border-left: none;
-    opacity: 0;
-  }
-}
-
-@keyframes slide-out-100 {
-  0% {
-    width: 100%;
-    opacity: 1;
-  }
-
-  100% {
-    width: 0%;
-    opacity: 0;
+    height: 0;
   }
 }
 

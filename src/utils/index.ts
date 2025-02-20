@@ -1,5 +1,5 @@
-import { API_KEY, API_URL } from '@/constants';
-import { MimeType } from '@/types';
+import { API_KEY, API_URL, FOLDER_MIME_TYPE } from '@/constants';
+import { File, MimeType } from '@/types';
 import axios from 'axios';
 
 export function getIcon(mimeType: MimeType) {
@@ -11,6 +11,24 @@ export function getIcon(mimeType: MimeType) {
     default:
       return 'unknown';
   }
+}
+
+export function filterAndSort(data: File[]) {
+  // Filter
+  const filteredDirectories = data.filter((v: File) => v.mimeType === FOLDER_MIME_TYPE);
+  const filteredFiles = data.filter((v: File) => v.mimeType !== FOLDER_MIME_TYPE);
+
+  // Sort
+  const sortedDirectories = [...filteredDirectories].sort((a: File, b: File) =>
+    sortAlphabetically(a.name, b.name)
+  );
+
+  // files.value = sortedDirectories;
+  const sortedFiles = [...filteredFiles].sort((a: File, b: File) =>
+    sortAlphabetically(a.name, b.name)
+  );
+
+  return sortedDirectories.concat(sortedFiles);
 }
 
 export function sortAlphabetically(pa: string, pb: string) {
@@ -41,9 +59,6 @@ export async function loadFolder(id: string) {
   const url = `https://www.googleapis.com/drive/v3/files?q="${id}"+in+parents&key=${API_KEY}`;
   try {
     const response = await fetchWithTimeout(url, { timeout: 2000 });
-    // const response = await fetch(url, {
-    //   signal: controller.signal
-    // });
     if (response.ok) {
       const data = (await response.json()).files;
       return data;

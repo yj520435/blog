@@ -1,0 +1,29 @@
+[
+  {
+    "id": "1RsApMVgmRXjA7gycp7KbHoDw37eh89bY",
+    "name": "카피앤패이스트",
+    "from": "2022. 01",
+    "to": "2024. 10",
+    "department": "연구개발팀",
+    "position": "사원",
+    "tasks": "IoT 관제 시스템 UI 및 서비스 개발"
+  },
+  {
+    "id": "-",
+    "name": "스위스로그헬스케어코리아",
+    "from": "2019. 07",
+    "to": "2021. 05",
+    "department": "경영지원팀",
+    "position": "사원",
+    "tasks": "회계, 총무, 건설공무 외 경영지원 전반"
+  },
+  {
+    "id": "1381tfhzUkSjLDnAcvOUvbK3kUoS7kOM5",
+    "name": "유알피시스템",
+    "from": "2018. 06",
+    "to": "2018. 12",
+    "department": "행정포털팀",
+    "position": "사원",
+    "tasks": "행정포털시스템 기능개선사업 개발 참여"
+  }
+]
